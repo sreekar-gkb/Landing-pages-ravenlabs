@@ -1,0 +1,36 @@
+.wrap {
+  max-width: var(--rl-container-max);
+  margin-inline: auto;
+  padding: var(--rl-space-16) var(--rl-space-6);
+}
+.header { margin-bottom: var(--rl-space-8); }
+.header a { display: inline-block; margin-bottom: var(--rl-space-6); }
+.logo { width: 140px; height: auto; }
+.list {
+  display: grid;
+  gap: var(--rl-space-4);
+}
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rl-space-4);
+  padding: var(--rl-space-6);
+  border: 1px solid var(--rl-border);
+  border-radius: var(--rl-radius-lg);
+}
+.cardLeft h2 { font-size: var(--rl-h4); margin: 0 0 var(--rl-space-2); }
+.cardLeft p { font-size: var(--rl-body-sm); color: var(--rl-fg-muted); margin: 0; }
+.badge {
+  display: inline-block;
+  font-size: var(--rl-caption);
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--rl-radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badgeLive { background: #dcfce7; color: #15803d; }
+.badgeTest { background: var(--rl-gray-50); color: var(--rl-gray-400); }
+.badgeRetired { background: #fee2e2; color: #b91c1c; }

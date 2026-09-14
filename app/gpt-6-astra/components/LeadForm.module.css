@@ -1,0 +1,73 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rl-space-4);
+  min-width: 0;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--rl-space-4);
+  min-width: 0;
+}
+@media (min-width: 480px) {
+  .row { grid-template-columns: 1fr 1fr; }
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rl-space-2);
+  min-width: 0;
+}
+.field label {
+  font-size: var(--rl-body-sm);
+  font-weight: 600;
+  color: var(--rl-fg);
+}
+.field input {
+  min-height: 48px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 var(--rl-space-4);
+  border-radius: var(--rl-radius-md);
+  border: 1.5px solid var(--rl-border);
+  font-size: var(--rl-body);
+  font-family: var(--rl-font-body);
+  color: var(--rl-fg);
+  background: var(--rl-white);
+}
+.field input:focus-visible {
+  outline: none;
+  border-color: var(--rl-purple-1);
+  box-shadow: 0 0 0 3px rgba(74, 0, 225, 0.15);
+}
+.field input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+.error {
+  font-size: var(--rl-caption);
+  color: #dc2626;
+}
+.submitError {
+  font-size: var(--rl-body-sm);
+  color: #dc2626;
+  margin: 0;
+}
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.fineprint {
+  font-size: var(--rl-caption);
+  color: var(--rl-gray-400);
+  margin: 0;
+  text-align: center;
+}
+.fineprint a {
+  color: var(--rl-gray-400);
+  text-decoration: underline;
+}
