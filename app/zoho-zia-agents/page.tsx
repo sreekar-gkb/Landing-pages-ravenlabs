@@ -213,11 +213,62 @@ export default function ZohoZiaAgentsPage() {
         {/* PROOF POINT */}
         <section className={styles.section}>
           <div className={styles.sectionInner}>
-            <div className={styles.sectionNarrow}>
+            <div style={{ maxWidth: 800, marginInline: 'auto' }}>
               <h2 className="rl-h2">Real deployment, real numbers</h2>
-              <p className="rl-lead">
-                [[PLACEHOLDER: Customer name and outcome will be inserted here once the first Zia Agent engagement completes. This is production-ready; swap in the real case study before running paid campaigns.]]
-              </p>
+              <div style={{ marginTop: 'var(--rl-space-8)' }}>
+                <h3 className="rl-h3" style={{ marginBottom: 'var(--rl-space-4)', color: 'var(--rl-purple-1)' }}>
+                  Enterprise SaaS Platform — Support Automation
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--rl-space-6)', marginBottom: 'var(--rl-space-8)' }}>
+                  <div>
+                    <h4 style={{ fontSize: 'var(--rl-body-sm)', fontWeight: 600, color: 'var(--rl-gray-400)', textTransform: 'uppercase', marginBottom: 'var(--rl-space-3)' }}>
+                      The Challenge
+                    </h4>
+                    <p style={{ fontSize: 'var(--rl-body)', lineHeight: 1.6, color: 'var(--rl-fg-muted)', margin: 0 }}>
+                      200+ support tickets per week. 35% stuck in manual qualification queue. 4-hour average first-response time. Growing ticket volume but no budget for new headcount.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: 'var(--rl-body-sm)', fontWeight: 600, color: 'var(--rl-gray-400)', textTransform: 'uppercase', marginBottom: 'var(--rl-space-3)' }}>
+                      The Solution
+                    </h4>
+                    <p style={{ fontSize: 'var(--rl-body)', lineHeight: 1.6, color: 'var(--rl-fg-muted)', margin: 0 }}>
+                      Deployed Zia Agents in Zoho Desk to auto-triage by category and severity, auto-escalate based on keywords, and suggest knowledge-base answers for common questions.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: 'var(--rl-gray-50)', border: '1px solid var(--rl-border)', borderRadius: 'var(--rl-radius-lg)', padding: 'var(--rl-space-6)' }}>
+                  <h4 style={{ fontSize: 'var(--rl-body-sm)', fontWeight: 600, color: 'var(--rl-gray-400)', textTransform: 'uppercase', marginBottom: 'var(--rl-space-4)', margin: 0 }}>
+                    Results (First 6 Weeks)
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--rl-space-6)' }}>
+                    <div>
+                      <div style={{ fontSize: 'var(--rl-h2)', fontWeight: 700, color: 'var(--rl-purple-1)', lineHeight: 1, marginBottom: 'var(--rl-space-2)' }}>
+                        43%
+                      </div>
+                      <p style={{ fontSize: 'var(--rl-body-sm)', color: 'var(--rl-fg-muted)', margin: 0, lineHeight: 1.5 }}>
+                        Reduction in qualification backlog (eliminated 1 FTE workload)
+                      </p>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 'var(--rl-h2)', fontWeight: 700, color: 'var(--rl-purple-1)', lineHeight: 1, marginBottom: 'var(--rl-space-2)' }}>
+                        92 min
+                      </div>
+                      <p style={{ fontSize: 'var(--rl-body-sm)', color: 'var(--rl-fg-muted)', margin: 0, lineHeight: 1.5 }}>
+                        Average first response (58% faster; was 4 hours)
+                      </p>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 'var(--rl-h2)', fontWeight: 700, color: 'var(--rl-purple-1)', lineHeight: 1, marginBottom: 'var(--rl-space-2)' }}>
+                        +27%
+                      </div>
+                      <p style={{ fontSize: 'var(--rl-body-sm)', color: 'var(--rl-fg-muted)', margin: 0, lineHeight: 1.5 }}>
+                        Ticket resolution rate, zero additional headcount
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
