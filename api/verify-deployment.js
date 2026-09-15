@@ -62,21 +62,31 @@ export default async function handler(req, res) {
     if (!deploymentId) return res.status(400).json({ success: false, error: 'deploymentId is required' })
     if (!commitSha) return res.status(400).json({ success: false, error: 'commitSha is required' })
 
-    // Verify the requested Git commit directly. Do NOT require main to remain at
-    // this commit because other campaigns may be deployed concurrently.
+    // Verify the requested Git commit directly. Do not compare against main:
+    // another campaign is allowed to land on main while this deployment builds.
     const commit = await github(`git/commits/${commitSha}`)
     if (commit.sha !== commitSha) {
-      return res.status(409).json({ success: false, status: 'COMMIT_NOT_FOUND', error: 'Requested GitHub commit could not be verified', commitSha })
+      return res.status(409).json({
+        success: false,
+        status: 'COMMIT_NOT_FOUND',
+        error: 'Requested GitHub commit could not be verified',
+        commitSha,
+      })
     }
 
-    // Verify the exact campaign files at the requested commit.
+    // Verify the campaign files and registry entry on that exact commit.
     const page = await github(`contents/app/${campaignName}/page.tsx?ref=${commitSha}`)
     const thanks = await github(`contents/app/${campaignName}/thanks/page.tsx?ref=${commitSha}`)
     const registryFile = await github(`contents/data/campaigns.json?ref=${commitSha}`)
     const registry = JSON.parse(Buffer.from(registryFile.content, 'base64').toString('utf8'))
 
     if (!page.sha || !thanks.sha || !Array.isArray(registry) || !registry.some((campaign) => campaign.slug === campaignName)) {
-      return res.status(409).json({ success: false, status: 'GITHUB_CONTENT_FAILED', error: 'Campaign files or registry entry could not be verified at the requested commit', commitSha })
+      return res.status(409).json({
+        success: false,
+        status: 'GITHUB_CONTENT_FAILED',
+        error: 'Campaign files or registry entry could not be verified at the requested commit',
+        commitSha,
+      })
     }
 
     const deployment = await vercel(`/v13/deployments/${deploymentId}`)
@@ -106,13 +116,17 @@ export default async function handler(req, res) {
           commitSha,
         })
       }
+
+      // A 202 means the deployment is still processing. success=false is intentional:
+      // the campaign is not LIVE until the exact production URL is verified.
       return res.status(202).json({
-        success: true,
+        success: false,
         status: 'BUILDING',
         deploymentState: state,
         deploymentId,
         commitSha,
         url: `${DOMAIN}/${campaignName}`,
+        message: 'Deployment is still building. Poll this endpoint again; do not report LIVE yet.',
       })
     }
 
@@ -159,6 +173,7 @@ export default async function handler(req, res) {
     console.error('[verify-deployment]', error)
     return res.status(500).json({
       success: false,
+      status: 'VERIFICATION_FAILED',
       error: 'Deployment verification failed',
       details: error instanceof Error ? error.message : String(error),
     })
