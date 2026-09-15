@@ -22,5 +22,13 @@
     "keyword": "zoho crm business",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "dynamics-365-crm",
+    "name": "dynamics 365 crm Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/dynamics-365-crm",
+    "keyword": "dynamics 365 crm",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
