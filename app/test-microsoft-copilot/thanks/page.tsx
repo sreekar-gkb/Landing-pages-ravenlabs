@@ -1,1 +1,0 @@
-export default function() { return <h1>Thanks</h1> }
