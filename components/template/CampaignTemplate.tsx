@@ -6,6 +6,21 @@ import EngagementTracker from '@/components/EngagementTracker'
 import TestimonialCarousel from './TestimonialCarousel'
 import type { CampaignContent } from './CampaignContent.types'
 import styles from './CampaignTemplate.module.css'
+import {
+  Zap, ShieldCheck, TrendingUp, DollarSign, Clock, CheckCircle2, BarChart3,
+  Users, Settings, LineChart, AlertTriangle, Lock, RefreshCw, Sparkles,
+  Target, Layers, Gauge, Wrench, Bell, Search, type LucideIcon,
+} from 'lucide-react'
+
+// Curated so campaign content can only reference icons that actually exist and render —
+// an unrecognised name simply omits the icon rather than crashing the build.
+const ICONS: Record<string, LucideIcon> = {
+  zap: Zap, shield: ShieldCheck, 'trending-up': TrendingUp, 'dollar-sign': DollarSign,
+  clock: Clock, check: CheckCircle2, chart: BarChart3, users: Users, settings: Settings,
+  'line-chart': LineChart, alert: AlertTriangle, lock: Lock, refresh: RefreshCw,
+  sparkles: Sparkles, target: Target, layers: Layers, gauge: Gauge, wrench: Wrench,
+  bell: Bell, search: Search,
+}
 
 type Props = {
   /** The campaign slug — used for tracking, the lead form, and the thanks-page redirect. */
@@ -114,12 +129,20 @@ export default function CampaignTemplate({ campaign, content }: Props) {
               <p className="rl-lead" style={{ marginBottom: 0 }}>{content.answer.subhead}</p>
             </div>
             <div className={styles.benefitGrid}>
-              {content.answer.benefits.map((b) => (
-                <div key={b.title} className={styles.benefitCard}>
-                  <div className={styles.benefitTitle}>{b.title}</div>
-                  <div className={styles.benefitBody}>{b.body}</div>
-                </div>
-              ))}
+              {content.answer.benefits.map((b) => {
+                const Icon = b.icon ? ICONS[b.icon] : null
+                return (
+                  <div key={b.title} className={styles.benefitCard}>
+                    {Icon && (
+                      <div className={styles.benefitIcon}>
+                        <Icon size={20} strokeWidth={2} aria-hidden />
+                      </div>
+                    )}
+                    <div className={styles.benefitTitle}>{b.title}</div>
+                    <div className={styles.benefitBody}>{b.body}</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -128,8 +151,10 @@ export default function CampaignTemplate({ campaign, content }: Props) {
         {content.proof.testimonials.length > 0 && (
           <section className={styles.proof}>
             <div className="rl-container-narrow">
-              <p className={styles.proofEyebrow}>What clients say</p>
-              <TestimonialCarousel testimonials={content.proof.testimonials} />
+              <div className={styles.proofCard}>
+                <p className={styles.proofEyebrow}>What clients say</p>
+                <TestimonialCarousel testimonials={content.proof.testimonials} />
+              </div>
             </div>
           </section>
         )}

@@ -54,7 +54,10 @@ export default function CampaignsPage() {
                 </p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rl-space-4)' }}>
-                <span className={`${styles.badge} ${styles[badgeClass[c.status] ?? 'badgeTest']}`}>{c.status}</span>
+                <span className={`${styles.badge} ${styles[badgeClass[c.status] ?? 'badgeTest']}`}>
+                  {c.status === 'live' && <span className={styles.liveDot} aria-hidden />}
+                  {c.status}
+                </span>
                 <a className="rl-btn-secondary" href={c.url}>
                   View page
                 </a>

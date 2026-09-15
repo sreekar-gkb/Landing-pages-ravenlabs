@@ -48,7 +48,10 @@ export type CampaignContent = {
   answer: {
     heading: string;
     subhead: string;
-    benefits: { title: string; body: string }[]; // 3–5 items
+    /** icon is optional and backward-compatible — omit it and the card renders as before.
+     *  Must be one of the names in the curated set in CampaignTemplate.tsx's ICONS map;
+     *  an unrecognised name simply renders no icon rather than erroring. */
+    benefits: { title: string; body: string; icon?: string }[]; // 3–5 items
   };
 
   proof: {

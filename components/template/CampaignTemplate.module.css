@@ -153,9 +153,17 @@
   border: 1px solid var(--rl-border);
   border-radius: var(--rl-radius-md);
   padding: var(--rl-space-6);
-  transition: border-color var(--rl-transition), box-shadow var(--rl-transition);
+  transition: border-color var(--rl-transition), box-shadow var(--rl-transition), transform var(--rl-transition);
 }
-.benefitCard:hover { border-color: var(--rl-accent); box-shadow: var(--rl-shadow-sm); }
+.benefitCard:hover { border-color: var(--rl-accent); box-shadow: var(--rl-shadow-sm); transform: translateY(-2px); }
+.benefitIcon {
+  width: 40px; height: 40px;
+  border-radius: var(--rl-radius-sm);
+  background: var(--rl-soft-purple);
+  color: var(--rl-accent);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--rl-space-4);
+}
 .benefitTitle { font-weight: 700; margin-bottom: var(--rl-space-2); }
 .benefitBody { color: var(--rl-fg-muted); font-size: var(--rl-text-sm); line-height: var(--rl-leading-normal); }
 
@@ -164,6 +172,13 @@
   background: var(--rl-white);
   padding-block: var(--rl-space-20);
   text-align: center;
+}
+.proofCard {
+  background: var(--rl-canvas);
+  border-radius: var(--rl-radius-lg);
+  padding: var(--rl-space-12) var(--rl-space-8);
+  max-width: var(--rl-container-narrow);
+  margin-inline: auto;
 }
 .proofEyebrow { color: var(--rl-accent); font-weight: 600; font-size: var(--rl-text-sm); margin-bottom: var(--rl-space-6); }
 .proofQuote {

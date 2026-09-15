@@ -26,10 +26,10 @@ const content: CampaignContent = {
     heading: 'Continuous intelligence that stops surprises',
     subhead: "Fulqrom integrates your building's real-time data — BMS sensors, utility bills, weather, occupancy — and applies NABERS logic to show you exactly where your rating stands right now. Not in six months. Not at audit. Today.",
     benefits: [
-      { title: 'Predict your NABERS rating', body: 'See rating trends weeks or months before the official audit. Adjust operations, fix inefficiencies, and hit your target.' },
-      { title: 'Turn data into action', body: 'Real-time alerts show exactly which systems are costing you points. Facility teams know what to prioritise.' },
-      { title: 'Prove ROI on every retrofit', body: 'Before-and-after data validates every energy project. No more guessing what impact that new HVAC actually delivered.' },
-      { title: 'Defend your valuation', body: 'Buyers, tenants, and lenders want proof. Show NABERS trends, energy efficiency gains, and concrete improvements.' },
+      { icon: 'trending-up', title: 'Predict your NABERS rating', body: 'See rating trends weeks or months before the official audit. Adjust operations, fix inefficiencies, and hit your target.' },
+      { icon: 'zap', title: 'Turn data into action', body: 'Real-time alerts show exactly which systems are costing you points. Facility teams know what to prioritise.' },
+      { icon: 'dollar-sign', title: 'Prove ROI on every retrofit', body: 'Before-and-after data validates every energy project. No more guessing what impact that new HVAC actually delivered.' },
+      { icon: 'shield', title: 'Defend your valuation', body: 'Buyers, tenants, and lenders want proof. Show NABERS trends, energy efficiency gains, and concrete improvements.' },
     ],
   },
   proof: {
