@@ -6,6 +6,9 @@ import { submitLead } from '@/lib/submit-lead'
 type LeadFormProps = {
   campaign: string
   redirectPath?: string
+  /** Button label — defaults to the original hardcoded text so any existing page.tsx that
+   *  doesn't pass this prop keeps working exactly as before. */
+  ctaLabel?: string
 }
 
 function getTrackingParams() {
@@ -21,7 +24,7 @@ function getTrackingParams() {
   }
 }
 
-export default function LeadForm({ campaign, redirectPath }: LeadFormProps) {
+export default function LeadForm({ campaign, redirectPath, ctaLabel = 'Book a Readiness Session' }: LeadFormProps) {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
 
@@ -98,7 +101,7 @@ export default function LeadForm({ campaign, redirectPath }: LeadFormProps) {
           </p>
         )}
         <button className="rl-btn-primary" type="submit" disabled={status === 'submitting'} aria-busy={status === 'submitting'}>
-          {status === 'submitting' ? 'Submitting…' : 'Book a Readiness Session'}
+          {status === 'submitting' ? 'Submitting…' : ctaLabel}
         </button>
       </div>
     </form>
