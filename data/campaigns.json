@@ -1,50 +1,10 @@
 [
   {
-    "slug": "gpt-6-astra",
-    "name": "GPT-6 Astra Readiness — Real-Time AI Capabilities",
-    "url": "https://landing-pages-ravenlabs.vercel.app/gpt-6-astra",
-    "keyword": "gpt-6 astra",
-    "status": "test",
-    "deployedAt": "2026-09-14"
-  },
-  {
     "slug": "zoho-zia-agents",
     "name": "Zoho Zia Agents: Autonomous AI Across Your Ecosystem",
     "url": "https://landing-pages-ravenlabs.vercel.app/zoho-zia-agents",
     "keyword": "zoho zia agents",
     "status": "live",
     "deployedAt": "2026-09-14"
-  },
-  {
-    "slug": "test-1789436968",
-    "name": "test 1789436968 Campaign",
-    "url": "https://landing-pages-ravenlabs.vercel.app/test-1789436968",
-    "keyword": "test 1789436968",
-    "status": "live",
-    "deployedAt": "2026-09-15"
-  },
-  {
-    "slug": "fulqrom-asset-intelligence",
-    "name": "fulqrom asset intelligence Campaign",
-    "url": "https://landing-pages-ravenlabs.vercel.app/fulqrom-asset-intelligence",
-    "keyword": "fulqrom asset intelligence",
-    "status": "live",
-    "deployedAt": "2026-09-15"
-  },
-  {
-    "slug": "test-live-diag-01",
-    "name": "test live diag 01 Campaign",
-    "url": "https://landing-pages-ravenlabs.vercel.app/test-live-diag-01",
-    "keyword": "test live diag 01",
-    "status": "live",
-    "deployedAt": "2026-09-15"
-  },
-  {
-    "slug": "raven-copilot-studio-ai",
-    "name": "raven copilot studio ai Campaign",
-    "url": "https://landing-pages-ravenlabs.vercel.app/raven-copilot-studio-ai",
-    "keyword": "raven copilot studio ai",
-    "status": "live",
-    "deployedAt": "2026-09-15"
   }
 ]
