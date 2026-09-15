@@ -7,6 +7,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+type Campaign = {
+  slug: string
+  name: string
+  url: string
+  keyword: string
+  status: 'live' | 'test' | 'retired' | string
+  deployedAt: string
+}
+
+const campaignRegistry = campaigns as Campaign[]
+
 const badgeClass: Record<string, string> = {
   live: 'badgeLive',
   test: 'badgeTest',
@@ -24,23 +35,33 @@ export default function CampaignsPage() {
         <h1 className="rl-h2">Campaign registry</h1>
         <p className="rl-lead">Every landing page deployed under this project, for internal reference.</p>
       </div>
+
       <div className={styles.list}>
-        {campaigns.map((c) => (
-          <div key={c.slug} className={styles.card}>
+        {campaignRegistry.length === 0 ? (
+          <div className={styles.card}>
             <div className={styles.cardLeft}>
-              <h2>{c.name}</h2>
-              <p>
-                Keyword: {c.keyword} · Deployed {c.deployedAt}
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rl-space-4)' }}>
-              <span className={`${styles.badge} ${styles[badgeClass[c.status] ?? 'badgeTest']}`}>{c.status}</span>
-              <a className="rl-btn-secondary" href={c.url}>
-                View page
-              </a>
+              <h2>No campaigns deployed</h2>
+              <p>Create a campaign from the Raven Labs landing-page builder and it will appear here after deployment verification.</p>
             </div>
           </div>
-        ))}
+        ) : (
+          campaignRegistry.map((c) => (
+            <div key={c.slug} className={styles.card}>
+              <div className={styles.cardLeft}>
+                <h2>{c.name}</h2>
+                <p>
+                  Keyword: {c.keyword} · Deployed {c.deployedAt}
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rl-space-4)' }}>
+                <span className={`${styles.badge} ${styles[badgeClass[c.status] ?? 'badgeTest']}`}>{c.status}</span>
+                <a className="rl-btn-secondary" href={c.url}>
+                  View page
+                </a>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
