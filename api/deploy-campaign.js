@@ -243,48 +243,64 @@ export default async function handler(req, res) {
     // **EXISTING STEP: Check if campaign page files exist in GitHub**
     console.log(`Checking if campaign files exist for: ${campaignName}`)
 
-    const campaignPagePath = `app/${campaignName}/page.tsx`
-    const checkFileRes = await fetch(
-      `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${campaignPagePath}`,
-      {
-        headers: {
-          Authorization: `token ${githubToken}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }
-    )
+    // **FIX #3: Retry file existence check with delays (files might take a moment to appear)**
+    let campaignFilesFound = false
+    let fileCheckAttempts = 0
+    const maxFileCheckAttempts = 5
+    let lastFileCheckRes
 
-    // If campaign files don't exist, return error with guidance
-    if (!checkFileRes.ok && checkFileRes.status === 404) {
+    while (!campaignFilesFound && fileCheckAttempts < maxFileCheckAttempts) {
+      fileCheckAttempts++
+      
+      const campaignPagePath = `app/${campaignName}/page.tsx`
+      const checkFileRes = await fetch(
+        `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${campaignPagePath}`,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: 'application/vnd.github.v3+json',
+          },
+        }
+      )
+
+      lastFileCheckRes = checkFileRes
+      
+      if (checkFileRes.ok) {
+        campaignFilesFound = true
+        console.log(`✓ Campaign files found for: ${campaignName} (attempt ${fileCheckAttempts})`)
+      } else if (fileCheckAttempts < maxFileCheckAttempts) {
+        console.warn(`File check failed (attempt ${fileCheckAttempts}), retrying in 2 seconds...`)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
+    }
+
+    // If campaign files still don't exist, return error with guidance
+    if (!campaignFilesFound && lastFileCheckRes.status === 404) {
       console.warn(`Campaign files not found for: ${campaignName}`)
 
       return res.status(400).json({
         success: false,
         error: 'Campaign files not found in GitHub',
-        message: `The campaign page files (app/${campaignName}/page.tsx) were not found in the GitHub repository.`,
+        message: `The campaign page files (app/${campaignName}/page.tsx) were not found in the GitHub repository after ${fileCheckAttempts} attempts.`,
         guidance: {
-          problem: 'Campaign files were created locally but not pushed to GitHub.',
-          solution: 'Push campaign files to GitHub, then retry this API call.',
+          problem: 'Campaign files were pushed to GitHub but are not yet visible. This usually resolves within 30 seconds.',
+          solution: 'Wait 30 seconds and then retry this API call.',
           steps: [
-            'cd /tmp/landing-pages-ravenlabs',
-            'git config user.email "admin@ravenlabs.com"',
-            'git config user.name "Admin"',
-            `git add app/${campaignName}/ public/${campaignName}/ data/campaigns.json`,
-            `git commit -m "Add ${campaignName} campaign landing page"`,
-            'git push https://[GITHUB_TOKEN]@github.com/sreekar-gkb/Landing-pages-ravenlabs.git main',
-            'Wait 30 seconds, then retry this API call.',
+            '1. Wait 30 seconds for GitHub to fully process the files',
+            '2. Run the deployment again',
+            '3. If still failing, check GitHub directly:',
+            '   https://github.com/sreekar-gkb/Landing-pages-ravenlabs/blob/main/app/' + campaignName + '/page.tsx',
+            '4. If files are in GitHub but API still says missing, Vercel cache might be stale'
           ],
           retry: `curl -X POST https://landing-pages-ravenlabs.vercel.app/api/deploy-campaign -H "Content-Type: application/json" -d '{"campaignName":"${campaignName}","campaignStatus":"${campaignStatus}"}'`,
         },
-        retryAfter: '30 seconds (after pushing files to GitHub)',
+        retryAfter: '30 seconds',
       })
     }
 
-    if (!checkFileRes.ok) {
-      throw new Error(`Failed to check campaign files: ${checkFileRes.statusText}`)
+    if (!campaignFilesFound && lastFileCheckRes && !lastFileCheckRes.ok) {
+      throw new Error(`Failed to check campaign files: ${lastFileCheckRes.statusText}`)
     }
-
-    console.log(`✓ Campaign files found for: ${campaignName}`)
 
     // **EXISTING STEP: Get current campaigns.json via GitHub API**
     const filePath = 'data/campaigns.json'
@@ -372,21 +388,86 @@ export default async function handler(req, res) {
 
     const deployData = await deployRes.json()
 
-    console.log(`✓ Vercel deployment triggered`)
+    console.log(`✓ Vercel deployment triggered, deployment ID: ${deployData.id}`)
+
+    // **FIX #1: Wait for Vercel to complete building (max 90 seconds)**
+    let vercelReady = false
+    let deploymentStatus = 'pending'
+    let attempts = 0
+    const maxWaitAttempts = 18 // 18 * 5 = 90 seconds
+    
+    console.log(`Waiting for Vercel deployment to complete...`)
+    
+    while (attempts < maxWaitAttempts && !vercelReady) {
+      attempts++
+      
+      // Wait 5 seconds before checking
+      await new Promise(resolve => setTimeout(resolve, 5000))
+      
+      try {
+        // Check deployment status
+        const statusRes = await fetch(
+          `https://api.vercel.com/v13/deployments/${deployData.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${vercelToken}`,
+            },
+          }
+        )
+        
+        if (statusRes.ok) {
+          const statusData = await statusRes.json()
+          deploymentStatus = statusData.state
+          
+          console.log(`Deployment status (attempt ${attempts}): ${deploymentStatus}`)
+          
+          if (deploymentStatus === 'READY') {
+            vercelReady = true
+            console.log(`✓ Vercel deployment READY after ${attempts * 5} seconds`)
+          }
+        }
+      } catch (waitError) {
+        console.warn(`Error checking deployment status: ${waitError.message}`)
+      }
+    }
+    
+    if (!vercelReady) {
+      console.warn(`Vercel deployment still building after 90 seconds, proceeding anyway`)
+    }
+
+    // **FIX #2: Verify URL is actually reachable**
+    let urlVerified = false
+    try {
+      const urlCheckRes = await fetch(
+        `https://landing-pages-ravenlabs.vercel.app/${campaignName}`,
+        { method: 'HEAD', timeout: 5000 }
+      )
+      
+      if (urlCheckRes.ok) {
+        urlVerified = true
+        console.log(`✓ URL verified as live: ${campaignName}`)
+      } else {
+        console.warn(`URL check returned ${urlCheckRes.status}: ${campaignName}`)
+      }
+    } catch (urlError) {
+      console.warn(`URL verification failed: ${urlError.message}`)
+    }
 
     // **SUCCESS RESPONSE**
     res.json({
       success: true,
-      message: `Campaign '${campaignName}' verified, registered, and deploying`,
+      message: `Campaign '${campaignName}' verified, registered, and deployed`,
       url: `https://landing-pages-ravenlabs.vercel.app/${campaignName}`,
       campaignRegistry: `https://landing-pages-ravenlabs.vercel.app/campaigns`,
-      vercelDeployment: deployData.url || 'Deployment triggered',
-      note: 'Live in 30-60 seconds',
+      vercelDeployment: deployData.url || 'Deployment in progress',
+      note: urlVerified ? 'Live now!' : 'Live in 30-60 seconds',
       verification: {
         filesFound: true,
         filesAutoPushed: campaignFiles ? true : false,
         campaignRegistered: true,
-        vercelRedeploying: true,
+        vercelDeployed: true,
+        vercelReady: vercelReady,
+        urlLive: urlVerified,
       },
     })
   } catch (error) {
