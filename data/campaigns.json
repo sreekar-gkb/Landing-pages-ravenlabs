@@ -22,5 +22,13 @@
     "keyword": "test 1789436968",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "fulqrom-asset-intelligence",
+    "name": "fulqrom asset intelligence Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/fulqrom-asset-intelligence",
+    "keyword": "fulqrom asset intelligence",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
