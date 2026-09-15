@@ -1,49 +1,51 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import type { Testimonial } from './CampaignContent.types'
+import { useEffect, useState, useCallback } from 'react'
+import styles from './CampaignTemplate.module.css'
+import type { CampaignContent } from './CampaignContent.types'
 
-export default function TestimonialCarousel({ testimonials }: { testimonials: Testimonial[] }) {
-  const [i, setI] = useState(0)
-  const hasSample = testimonials.some((t) => t.sample)
+type Props = { testimonials: CampaignContent['proof']['testimonials'] }
+
+export default function TestimonialCarousel({ testimonials }: Props) {
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  const next = useCallback(() => setIndex((n) => (n + 1) % testimonials.length), [testimonials.length])
 
   useEffect(() => {
-    if (testimonials.length < 2) return
-    const t = setInterval(() => setI((n) => (n + 1) % testimonials.length), 7000)
-    return () => clearInterval(t)
-  }, [testimonials.length])
+    if (paused || testimonials.length < 2) return
+    const timer = setInterval(next, 7000)
+    return () => clearInterval(timer)
+  }, [paused, next, testimonials.length])
 
   if (testimonials.length === 0) return null
-  const current = testimonials[i]
+  const current = testimonials[index]
+  const anySample = testimonials.some((t) => t.sample)
 
   return (
-    <div style={{ textAlign: 'center', maxWidth: 720, marginInline: 'auto' }}>
-      <blockquote style={{ fontFamily: 'var(--rl-font-display)', fontSize: 'var(--rl-h3)', margin: 0, lineHeight: 1.4 }}>
-        &ldquo;{current.quote}&rdquo;
-      </blockquote>
-      <div style={{ marginTop: 'var(--rl-space-6)', fontWeight: 600 }}>{current.name}</div>
-      <div style={{ color: 'var(--rl-fg-muted)', fontSize: 'var(--rl-body-sm)' }}>{current.title}</div>
+    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <blockquote className={styles.proofQuote}>&ldquo;{current.quote}&rdquo;</blockquote>
+      <div className={styles.proofPerson}>
+        <div className={styles.proofName}>{current.name}</div>
+        <div className={styles.proofTitle}>{current.title}</div>
+      </div>
       {testimonials.length > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 'var(--rl-space-6)' }}>
-          {testimonials.map((_, n) => (
+        <div className={styles.proofDots} role="tablist" aria-label="Testimonials">
+          {testimonials.map((t, i) => (
             <button
-              key={n}
-              onClick={() => setI(n)}
-              aria-label={`Show testimonial ${n + 1}`}
-              aria-current={n === i}
-              style={{
-                width: n === i ? 24 : 8, height: 8, borderRadius: 999, border: 0, cursor: 'pointer',
-                background: n === i ? 'var(--rl-accent)' : 'var(--rl-border)', transition: 'width 180ms ease',
-              }}
+              key={t.name}
+              type="button"
+              role="tab"
+              aria-selected={i === index}
+              aria-current={i === index}
+              aria-label={`Show testimonial from ${t.name}`}
+              className={styles.proofDot}
+              onClick={() => setIndex(i)}
             />
           ))}
         </div>
       )}
-      {hasSample && (
-        <p style={{ marginTop: 'var(--rl-space-6)', fontSize: 'var(--rl-caption)', color: 'var(--rl-fg-muted)' }}>
-          Sample content — replaced with approved client quotes before launch.
-        </p>
-      )}
+      {anySample && <p className={styles.proofSample}>Sample testimonials — replaced with approved client quotes before launch.</p>}
     </div>
   )
 }

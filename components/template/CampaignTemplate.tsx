@@ -1,142 +1,220 @@
 import Image from 'next/image'
-import Nav from '@/components/Nav'
 import LeadForm from '@/components/LeadForm'
 import Accordion from '@/components/Accordion'
 import TrackedCta from '@/components/TrackedCta'
+import EngagementTracker from '@/components/EngagementTracker'
 import TestimonialCarousel from './TestimonialCarousel'
-import type { CampaignContent, Partner } from './CampaignContent.types'
+import type { CampaignContent } from './CampaignContent.types'
 import styles from './CampaignTemplate.module.css'
 
 type Props = {
+  /** The campaign slug — used for tracking, the lead form, and the thanks-page redirect. */
   campaign: string
   content: CampaignContent
-  partner?: Partner
 }
 
-/** Renders {curly braces} in a headline template as accent-coloured text. */
-function Headline({ template }: { template: string }) {
-  const parts = template.split(/(\{[^}]+\})/g)
-  return (
-    <h1 className="rl-display">
-      {parts.map((part, i) =>
-        part.startsWith('{') && part.endsWith('}') ? (
-          <span key={i} className={styles.heroAccent}>{part.slice(1, -1)}</span>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </h1>
-  )
-}
-
-export default function CampaignTemplate({ campaign, content, partner }: Props) {
-  const { nav, hero, trustBar, problem, answer, proof, process, faq, finalCta, footer } = content
+/**
+ * The fixed Raven Labs campaign template, modeled on https://copilot.theravenlabs.com/.
+ *
+ * DO NOT fork this component per campaign. Every campaign page.tsx should be a thin wrapper
+ * that imports this template and supplies a CampaignContent object — see
+ * SKILL.md Phase 5 and assets/campaign-page-example.tsx for the exact pattern.
+ */
+export default function CampaignTemplate({ campaign, content }: Props) {
+  const [before, accent, after] = splitOnAccent(content.hero.headlineTemplate)
 
   return (
     <>
-      <Nav partner={partner} phone={nav?.phoneHref} phoneLabel={nav?.phoneLabel} />
+      <EngagementTracker campaign={campaign} />
 
-      <section className={styles.hero}>
-        <div className={styles.heroInner}>
-          <div>
-            <Headline template={hero.headlineTemplate} />
-            <p className="rl-lead">{hero.subhead}</p>
-            {hero.bullets && hero.bullets.length > 0 && (
-              <ul className={styles.heroBullets}>
-                {hero.bullets.map((b) => <li key={b}>{b}</li>)}
-              </ul>
+      {/* ---------- Nav ---------- */}
+      <header className={styles.nav}>
+        <div className={`rl-container ${styles.navInner}`}>
+          <div className={styles.cobrand}>
+            <Image src="/raven-labs-logo.png" alt="Raven Labs" width={140} height={40} priority style={{ height: 36, width: 'auto' }} />
+            {content.partnerName && (
+              <>
+                <span className={styles.cobrandDivider} aria-hidden />
+                {content.partnerLogoSrc && (
+                  <Image
+                    src={content.partnerLogoSrc}
+                    alt=""
+                    width={24}
+                    height={24}
+                    aria-hidden
+                    style={{ height: 24, width: 24, objectFit: 'contain' }}
+                  />
+                )}
+                <span className={styles.partnerName}>{content.partnerName}</span>
+              </>
             )}
           </div>
-          <div className={styles.formCard}>
-            <h2>{hero.formHeading}</h2>
-            <p>{hero.formSubhead}</p>
-            <LeadForm campaign={campaign} redirectPath={`/${campaign}/thanks`} />
-          </div>
+          <TrackedCta href={content.nav.phoneHref} label="nav_phone" campaign={campaign} className="rl-btn-primary">
+            {content.nav.phoneLabel}
+          </TrackedCta>
         </div>
-      </section>
+      </header>
 
-      {trustBar && <div className={styles.trustBar}>{trustBar.label}</div>}
+      <main id="top">
+        {/* ---------- Hero ---------- */}
+        <section className={styles.hero}>
+          <div className={`rl-container ${styles.heroInner}`}>
+            <div>
+              <h1 className="rl-display">
+                {before}
+                {accent && <span className={styles.heroAccent}>{accent}</span>}
+                {after}
+              </h1>
+              <p className="rl-lead">{content.hero.subhead}</p>
+              <ul className={styles.heroBullets} style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {content.hero.bullets.map((b, i) => (
+                  <li key={b}>
+                    {b}
+                    {i < content.hero.bullets.length - 1 && <span className={styles.heroBulletDot}>•</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-      <section className={styles.section}>
-        <div className={styles.sectionNarrow} style={{ textAlign: 'center' }}>
-          <h2 className="rl-h2">{problem.heading}</h2>
-          <p className="rl-lead">{problem.body}</p>
-        </div>
-      </section>
-
-      <section className={`${styles.section} ${styles.sectionAlt}`}>
-        <div className={styles.sectionInner}>
-          <h2 className="rl-h2">{answer.heading}</h2>
-          {answer.subhead && <p className="rl-lead">{answer.subhead}</p>}
-          <div className={styles.benefitsGrid}>
-            {answer.benefits.map((b) => (
-              <div key={b.title} className={styles.benefitCard}>
-                <h3>{b.title}</h3>
-                <p>{b.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {proof && proof.testimonials.length > 0 && (
-        <section className={styles.section}>
-          <div className={styles.sectionInner}>
-            <TestimonialCarousel testimonials={proof.testimonials} />
+            <div className={styles.formCard}>
+              <h2 className={`rl-h3 ${styles.formHeading}`}>{content.hero.formHeading}</h2>
+              <p className={styles.formSubhead}>{content.hero.formSubhead}</p>
+              <LeadForm campaign={campaign} redirectPath={`/${campaign}/thanks`} ctaLabel={content.hero.ctaLabel} />
+            </div>
           </div>
         </section>
-      )}
 
-      {process && (
-        <section className={`${styles.section} ${styles.sectionAlt}`}>
-          <div className={styles.sectionInner}>
-            <h2 className="rl-h2">{process.heading}</h2>
-            {process.subhead && <p className="rl-lead">{process.subhead}</p>}
-            <div className={styles.processGrid}>
-              {process.steps.map((s, i) => (
-                <div key={s.title} className={styles.processStep}>
-                  <div className={styles.processNumber}>{i + 1}</div>
-                  <h3 className="rl-h4">{s.title}</h3>
-                  <p style={{ color: 'var(--rl-fg-muted)', fontSize: 'var(--rl-body-sm)' }}>{s.body}</p>
+        {/* ---------- Trust bar (optional) ---------- */}
+        {content.trustBar && (
+          <section className={styles.trustBar}>
+            <div className="rl-container">
+              <p className={styles.trustLabel}>{content.trustBar.label}</p>
+              <div className={styles.trustSkeletons}>
+                {Array.from({ length: content.trustBar.placeholderCount ?? 5 }).map((_, i) => (
+                  <div key={i} className={styles.trustSkeleton} aria-hidden />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ---------- Problem ---------- */}
+        <section className={styles.problem}>
+          <div className={`rl-container ${styles.problemInner}`}>
+            <h2 className="rl-h2">{content.problem.heading}</h2>
+            <p className="rl-lead" style={{ marginBottom: 0 }}>{content.problem.body}</p>
+          </div>
+        </section>
+
+        {/* ---------- Answer / benefits ---------- */}
+        <section className={styles.answer}>
+          <div className="rl-container">
+            <div className={styles.answerHead}>
+              <h2 className="rl-h2">{content.answer.heading}</h2>
+              <p className="rl-lead" style={{ marginBottom: 0 }}>{content.answer.subhead}</p>
+            </div>
+            <div className={styles.benefitGrid}>
+              {content.answer.benefits.map((b) => (
+                <div key={b.title} className={styles.benefitCard}>
+                  <div className={styles.benefitTitle}>{b.title}</div>
+                  <div className={styles.benefitBody}>{b.body}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
-      )}
 
-      {faq && (
-        <section className={styles.section}>
-          <div className={styles.sectionNarrow}>
-            <h2 className="rl-h2">{faq.heading}</h2>
-            <Accordion items={faq.items} />
+        {/* ---------- Proof / testimonial carousel ---------- */}
+        {content.proof.testimonials.length > 0 && (
+          <section className={styles.proof}>
+            <div className="rl-container-narrow">
+              <p className={styles.proofEyebrow}>What clients say</p>
+              <TestimonialCarousel testimonials={content.proof.testimonials} />
+            </div>
+          </section>
+        )}
+
+        {/* ---------- Process ---------- */}
+        <section className={styles.process}>
+          <div className="rl-container">
+            <div className={styles.processHead}>
+              <h2 className="rl-h2">{content.process.heading}</h2>
+              <p className="rl-lead" style={{ marginBottom: 0 }}>{content.process.subhead}</p>
+            </div>
+            <div className={styles.processGrid}>
+              <div className={styles.processLine} aria-hidden />
+              {content.process.steps.map((s, i) => (
+                <div key={s.title} className={styles.processStep}>
+                  <div className={styles.processBadge}>
+                    <span className="rl-h3" style={{ margin: 0, color: 'var(--rl-accent)' }}>{i + 1}</span>
+                  </div>
+                  <div className={styles.processTitle}>{s.title}</div>
+                  <div className={styles.processBody}>{s.body}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
-      )}
 
-      <section className={styles.finalCta}>
-        <h2 className="rl-h2">{finalCta.heading}</h2>
-        <p>{finalCta.body}</p>
-        <div className={styles.finalCtaButton}>
-          <TrackedCta href="#top" label={finalCta.ctaLabel} campaign={campaign} className="rl-btn-secondary">
-            {finalCta.ctaLabel}
-          </TrackedCta>
-        </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <Image src="/raven-labs-logo-white.png" alt="Raven Labs" width={130} height={46} className={styles.footerLogo} />
-          <div className={styles.footerBottom}>
-            © {new Date().getFullYear()} Raven Labs Pty Ltd · Melbourne, Australia ·{' '}
-            <a href="/privacy" style={{ color: 'inherit' }}>Privacy</a> ·{' '}
-            <a href="/terms" style={{ color: 'inherit' }}>Terms</a>
+        {/* ---------- FAQ ---------- */}
+        <section className={styles.faq}>
+          <div className={`rl-container ${styles.faqInner}`}>
+            <h2 className={`rl-h2 ${styles.faqHead}`}>{content.faq.heading}</h2>
+            <Accordion items={content.faq.items} />
           </div>
-          {footer.partnerAttribution && (
-            <p className={styles.footerAttribution}>{footer.partnerAttribution}</p>
+        </section>
+
+        {/* ---------- Final CTA ---------- */}
+        <section className={styles.finalCta}>
+          <div className="rl-container-narrow">
+            <h2 className="rl-h2">{content.finalCta.heading}</h2>
+            <p className={styles.finalCtaBody}>{content.finalCta.body}</p>
+            <TrackedCta href="#top" label="final_cta" campaign={campaign} className={`rl-btn-primary ${styles.finalCtaButton}`}>
+              {content.finalCta.ctaLabel}
+            </TrackedCta>
+            <p className={styles.finalCtaReassurance}>{content.finalCta.reassurance}</p>
+          </div>
+        </section>
+      </main>
+
+      {/* ---------- Footer ---------- */}
+      <footer className={styles.footer}>
+        <div className="rl-container">
+          <div className={styles.footerGrid}>
+            <div>
+              <div className={styles.footerLogoRow}>
+                <Image src="/raven-labs-logo-white.png" alt="" width={28} height={28} aria-hidden style={{ height: 28, width: 'auto' }} />
+                <span className={styles.footerBrandName}>Raven Labs</span>
+              </div>
+              <p className={styles.footerAbout}>{content.footer.aboutLine}</p>
+            </div>
+            <div>
+              <div className={styles.footerColLabel}>Contact</div>
+              <a href={content.nav.phoneHref} className={styles.footerLink}>{content.nav.phoneLabel}</a>
+              <a href="mailto:hello@theravenlabs.com" className={styles.footerLink}>hello@theravenlabs.com</a>
+            </div>
+            <div>
+              <div className={styles.footerColLabel}>Company</div>
+              <a href="/privacy" className={styles.footerLink}>Privacy</a>
+              <a href="/terms" className={styles.footerLink}>Terms</a>
+            </div>
+          </div>
+          <div className={styles.footerBottom}>
+            <div>© {new Date().getFullYear()} Raven Labs Pty Ltd · ABN {content.footer.abn} · Melbourne, Australia</div>
+          </div>
+          {content.footer.partnerAttribution && (
+            <div className={styles.footerAttribution}>{content.footer.partnerAttribution}</div>
           )}
         </div>
       </footer>
     </>
   )
+}
+
+/** Splits "Turn Copilot into real {Results}" into ["Turn Copilot into real ", "Results", ""]. */
+function splitOnAccent(template: string): [string, string | null, string] {
+  const match = template.match(/^(.*)\{(.+)\}(.*)$/)
+  if (!match) return [template, null, '']
+  const [, before, accent, after] = match
+  return [before, accent, after]
 }
