@@ -72,25 +72,21 @@ export default async function handler(req, res) {
     const expectedThanks = `app/${campaignName}/thanks/page.tsx`
     const suppliedPaths = Object.keys(campaignFiles)
     if (!suppliedPaths.includes(expectedPage) || !suppliedPaths.includes(expectedThanks)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Required campaign routes are missing',
-        required: [expectedPage, expectedThanks],
-        supplied: suppliedPaths,
-      })
+      return res.status(400).json({ success: false, error: 'Required campaign routes are missing', required: [expectedPage, expectedThanks], supplied: suppliedPaths })
     }
 
     for (const [path, content] of Object.entries(campaignFiles)) {
-      if (!path.startsWith(`app/${campaignName}/`) && !path.startsWith(`public/${campaignName}/`) && !path.startsWith('components/')) {
-        return res.status(400).json({ success: false, error: `Unsupported campaign file path: ${path}` })
-      }
+      const allowed = path.startsWith(`app/${campaignName}/`) || path.startsWith(`public/${campaignName}/`) || path.startsWith('components/')
+      if (!allowed) return res.status(400).json({ success: false, error: `Unsupported campaign file path: ${path}` })
       if (typeof content !== 'string') return res.status(400).json({ success: false, error: `File content must be text: ${path}` })
       if (Buffer.byteLength(content, 'utf8') > 1024 * 1024) return res.status(400).json({ success: false, error: `File exceeds 1MB: ${path}` })
     }
 
-    // Read the current registry and include its update in the SAME Git commit as the campaign.
+    // Read registry and commit it together with the campaign so Vercel never builds half a campaign.
     const registry = await github('contents/data/campaigns.json?ref=main')
     const campaigns = JSON.parse(Buffer.from(registry.content, 'base64').toString('utf8'))
+    if (!Array.isArray(campaigns)) throw new Error('data/campaigns.json must contain a JSON array')
+
     const record = {
       slug: campaignName,
       name: `${campaignName.replace(/-/g, ' ')} Campaign`,
@@ -103,7 +99,6 @@ export default async function handler(req, res) {
     if (index >= 0) campaigns[index] = record
     else campaigns.push(record)
 
-    // Atomic GitHub commit: campaign files + registry.
     const branch = await github('git/ref/heads/main')
     const baseSha = branch.object.sha
     const tree = Object.entries({
@@ -115,11 +110,9 @@ export default async function handler(req, res) {
     const commit = await github('git/commits', { method: 'POST', body: JSON.stringify({ message: `Deploy ${campaignName} landing page`, tree: treeData.sha, parents: [baseSha] }) })
     await github('git/refs/heads/main', { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) })
 
-    // Verify GitHub contains the actual route before touching deployment status.
     await github(`contents/${expectedPage}?ref=main`)
     await github(`contents/${expectedThanks}?ref=main`)
 
-    // Trigger a production deployment from the same main branch.
     const deployment = await vercel('/v13/deployments?forceNew=1', {
       method: 'POST',
       body: JSON.stringify({ projectId: PROJECT_ID, gitSource: { type: 'github', ref: 'main' } }),
@@ -127,7 +120,7 @@ export default async function handler(req, res) {
     if (!deployment.id) throw new Error('Vercel did not return a deployment ID')
 
     let state = 'QUEUED'
-    for (let attempt = 0; attempt < 24; attempt++) {
+    for (let attempt = 0; attempt < 9; attempt++) {
       await sleep(5000)
       const status = await vercel(`/v13/deployments/${deployment.id}`)
       state = status.state || status.readyState || 'UNKNOWN'
@@ -137,13 +130,12 @@ export default async function handler(req, res) {
       }
     }
 
-    // Fail closed. Never report LIVE unless Vercel is READY AND the exact campaign URL returns 2xx.
     if (state !== 'READY') {
-      return res.status(504).json({ success: false, error: 'Vercel deployment was not READY within 120 seconds', deploymentId: deployment.id, deploymentState: state, url: `${DOMAIN}/${campaignName}` })
+      return res.status(504).json({ success: false, error: 'Vercel deployment was not READY within the verification window', deploymentId: deployment.id, deploymentState: state, url: `${DOMAIN}/${campaignName}` })
     }
 
     let verification = null
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       verification = await verifyUrl(`${DOMAIN}/${campaignName}`)
       if (verification.ok) break
       await sleep(3000)
