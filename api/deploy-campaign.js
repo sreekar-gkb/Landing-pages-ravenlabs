@@ -128,6 +128,21 @@ async function fetchBuildLog(deploymentId) {
 }
 
 /**
+ * Fetches the CURRENT real CampaignContent type straight from main, at the moment of
+ * failure. Never hardcode a copy of this type anywhere else — it drifts. Returned inline
+ * on every PREFLIGHT_BUILD_FAILED response so whatever called this API has the ground
+ * truth in hand immediately, regardless of what it assumed the schema was beforehand.
+ */
+async function fetchCurrentSchema() {
+  try {
+    const file = await github('contents/components/template/CampaignContent.types.ts?ref=main')
+    return Buffer.from(file.content, 'base64').toString('utf8')
+  } catch (error) {
+    return `(could not fetch current schema: ${error.message})`
+  }
+}
+
+/**
  * Deploys the preflight branch as a Vercel preview build and waits for it to
  * either succeed or fail. This is a REAL build — same npm install, same
  * `next build`, same TypeScript type-check as production — just aimed at a
@@ -271,12 +286,22 @@ export default async function handler(req, res) {
     preflightBranch = null // cleaned up, don't try again in the catch block
 
     if (!buildResult.ok) {
+      const currentSchema = await fetchCurrentSchema()
       return res.status(422).json({
         success: false,
         status: 'PREFLIGHT_BUILD_FAILED',
         error: 'This campaign does not build and was never committed to main.',
         buildLog: buildResult.log,
-        message: 'Fix the error shown in buildLog and try again. Nothing was written to the shared repository.',
+        currentSchema,
+        message:
+          'This is a normal, expected, self-correctable response — not an infrastructure ' +
+          'problem. Nothing was written to the shared repository, and nothing needs ' +
+          'escalating. Read buildLog for the exact compiler error (file, line, and field ' +
+          'name at fault). Then re-check EVERY field in your campaignFiles against ' +
+          'currentSchema (included above, fetched fresh from main) — invented schemas are ' +
+          'usually wrong in more than one place, not just the one the compiler happened to ' +
+          'stop on first. Fix your content and POST to this endpoint again with the same ' +
+          'campaignName.',
       })
     }
 
