@@ -1,1 +1,1 @@
-export default function Page() { return <h1>Microsoft 365 Copilot Landing Page</h1> }
+export default function() { return <h1>Test</h1> }

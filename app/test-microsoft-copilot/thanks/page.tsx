@@ -1,1 +1,1 @@
-export default function Thanks() { return <h1>Thank You!</h1> }
+export default function() { return <h1>Thanks</h1> }
