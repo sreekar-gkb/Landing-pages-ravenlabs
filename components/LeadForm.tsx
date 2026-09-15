@@ -57,9 +57,11 @@ export default function LeadForm({ campaign, redirectPath, ctaLabel = 'Book a Re
 
       setStatus('error')
       setError(result.error)
-    } catch {
+    } catch (err) {
       setStatus('error')
-      setError('Something went wrong. Please try again.')
+      const detail = err instanceof Error ? err.message : String(err)
+      setError(`Something went wrong: ${detail}`)
+      console.error('[LeadForm] submitLead threw', err)
     }
   }
 
