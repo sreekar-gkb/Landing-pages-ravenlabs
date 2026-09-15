@@ -14,5 +14,13 @@
     "keyword": "zoho zia agents",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "zoho-crm-business",
+    "name": "zoho crm business Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/zoho-crm-business",
+    "keyword": "zoho crm business",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
