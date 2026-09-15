@@ -2,10 +2,9 @@ const GITHUB_API = 'https://api.github.com'
 const VERCEL_API = 'https://api.vercel.com'
 const OWNER = 'sreekar-gkb'
 const REPO = 'Landing-pages-ravenlabs'
+const REPO_ID = 1368350860
 const PROJECT_ID = 'prj_X1zS1V8NW6zf3P4sUXUSsPb21Sjb'
 const DOMAIN = 'https://landing-pages-ravenlabs.vercel.app'
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function github(path, options = {}) {
   const response = await fetch(`${GITHUB_API}/repos/${OWNER}/${REPO}/${path}`, {
@@ -44,18 +43,6 @@ async function vercel(path, options = {}) {
   return data
 }
 
-async function verifyUrl(url) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 10000)
-  try {
-    const response = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller.signal, cache: 'no-store' })
-    const body = await response.text()
-    return { ok: response.status >= 200 && response.status < 300, status: response.status, body: body.slice(0, 50000) }
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
 function validateCampaignFiles(campaignName, campaignFiles) {
   const expectedPage = `app/${campaignName}/page.tsx`
   const expectedThanks = `app/${campaignName}/thanks/page.tsx`
@@ -81,12 +68,13 @@ async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
   const expectedPage = `app/${campaignName}/page.tsx`
   const expectedThanks = `app/${campaignName}/thanks/page.tsx`
 
-  // Multiple Claude requests can arrive close together. Retry the complete
-  // registry + branch read + commit when main advances between attempts.
+  // Retry the whole read/commit sequence when another campaign advances main first.
   for (let attempt = 1; attempt <= 4; attempt++) {
     try {
       const registry = await github('contents/data/campaigns.json?ref=main')
       const campaigns = JSON.parse(Buffer.from(registry.content, 'base64').toString('utf8'))
+      if (!Array.isArray(campaigns)) throw new Error('data/campaigns.json must contain an array')
+
       const record = {
         slug: campaignName,
         name: `${campaignName.replace(/-/g, ' ')} Campaign`,
@@ -112,7 +100,11 @@ async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
       })
       const commit = await github('git/commits', {
         method: 'POST',
-        body: JSON.stringify({ message: `Deploy ${campaignName} landing page`, tree: treeData.sha, parents: [baseSha] }),
+        body: JSON.stringify({
+          message: `Deploy ${campaignName} landing page`,
+          tree: treeData.sha,
+          parents: [baseSha],
+        }),
       })
 
       try {
@@ -121,18 +113,33 @@ async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
           body: JSON.stringify({ sha: commit.sha, force: false }),
         })
       } catch (error) {
-        if (error.status === 422 || error.status === 409) throw Object.assign(error, { retryableConflict: true })
+        if ((error.status === 409 || error.status === 422) && attempt < 4) {
+          await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
+          continue
+        }
         throw error
       }
 
-      await github(`contents/${expectedPage}?ref=main`)
-      await github(`contents/${expectedThanks}?ref=main`)
+      // Verify the exact commit, not merely whatever main points to after it.
+      await github(`contents/${expectedPage}?ref=${commit.sha}`)
+      await github(`contents/${expectedThanks}?ref=${commit.sha}`)
+      const committedRegistry = await github(`contents/data/campaigns.json?ref=${commit.sha}`)
+      const committedCampaigns = JSON.parse(Buffer.from(committedRegistry.content, 'base64').toString('utf8'))
+      if (!committedCampaigns.some((campaign) => campaign.slug === campaignName)) {
+        throw new Error('Campaign registry was not written to the same commit')
+      }
+
       return commit.sha
     } catch (error) {
-      if (!error.retryableConflict || attempt === 4) throw error
-      await sleep(500 * attempt)
+      if ((error.status === 409 || error.status === 422) && attempt < 4) {
+        await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
+        continue
+      }
+      throw error
     }
   }
+
+  throw new Error('GitHub commit failed after 4 attempts')
 }
 
 export default async function handler(req, res) {
@@ -147,6 +154,9 @@ export default async function handler(req, res) {
     if (!campaignName || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(campaignName)) {
       return res.status(400).json({ success: false, error: 'campaignName must be a lowercase URL slug such as zoho-crm' })
     }
+    if (!['live', 'test'].includes(campaignStatus)) {
+      return res.status(400).json({ success: false, error: 'campaignStatus must be live or test' })
+    }
     if (!campaignFiles || typeof campaignFiles !== 'object' || Object.keys(campaignFiles).length === 0) {
       return res.status(400).json({ success: false, error: 'campaignFiles are required' })
     }
@@ -154,64 +164,34 @@ export default async function handler(req, res) {
     validateCampaignFiles(campaignName, campaignFiles)
     const commitSha = await commitCampaign(campaignName, campaignStatus, campaignFiles)
 
+    // Create one production deployment for the exact commit just pushed.
     const deployment = await vercel('/v13/deployments?forceNew=1', {
       method: 'POST',
       body: JSON.stringify({
+        name: 'landing-pages-ravenlabs',
         projectId: PROJECT_ID,
-        gitSource: { type: 'github', ref: 'main' },
+        target: 'production',
+        gitSource: {
+          type: 'github',
+          repoId: REPO_ID,
+          ref: 'main',
+          sha: commitSha,
+        },
       }),
     })
+
     if (!deployment.id) throw new Error('Vercel did not return a deployment ID')
 
-    let state = 'QUEUED'
-    for (let attempt = 0; attempt < 24; attempt++) {
-      await sleep(5000)
-      const status = await vercel(`/v13/deployments/${deployment.id}`)
-      state = status.state || status.readyState || 'UNKNOWN'
-      if (state === 'READY') break
-      if (['ERROR', 'CANCELED', 'CANCELLED'].includes(state)) {
-        return res.status(502).json({ success: false, error: 'Vercel deployment failed', commitSha, deploymentId: deployment.id, deploymentState: state })
-      }
-    }
-
-    if (state !== 'READY') {
-      return res.status(504).json({ success: false, error: 'Vercel deployment was not READY within 120 seconds', commitSha, deploymentId: deployment.id, deploymentState: state, url: `${DOMAIN}/${campaignName}` })
-    }
-
-    let verification = null
-    for (let attempt = 0; attempt < 6; attempt++) {
-      verification = await verifyUrl(`${DOMAIN}/${campaignName}`)
-      if (verification.ok) break
-      await sleep(3000)
-    }
-
-    if (!verification?.ok) {
-      return res.status(502).json({
-        success: false,
-        error: 'Production URL verification failed',
-        commitSha,
-        deploymentId: deployment.id,
-        deploymentState: state,
-        url: `${DOMAIN}/${campaignName}`,
-        httpStatus: verification?.status ?? null,
-      })
-    }
-
-    return res.status(200).json({
+    // Do not wait inside this serverless request. Claude must call the verification endpoint.
+    return res.status(202).json({
       success: true,
-      status: 'LIVE',
+      status: 'DEPLOYMENT_STARTED',
       campaign: campaignName,
       url: `${DOMAIN}/${campaignName}`,
       registryUrl: `${DOMAIN}/campaigns`,
       commitSha,
       deploymentId: deployment.id,
-      deploymentState: state,
-      verification: {
-        githubFiles: true,
-        vercelReady: true,
-        productionHttpStatus: verification.status,
-        productionUrlVerified: true,
-      },
+      message: 'GitHub commit verified and exact-commit production deployment started. Poll /api/verify-deployment before reporting LIVE.',
     })
   } catch (error) {
     console.error('[deploy-campaign]', error)
