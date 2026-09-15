@@ -68,6 +68,99 @@ function validateCampaignFiles(campaignName, campaignFiles) {
   }
 }
 
+/**
+ * Creates a throwaway branch off the current main tip containing only the new
+ * campaign's files, layered on top of everything already on main. Does NOT touch
+ * main's ref. Used to build-verify a campaign before it's allowed anywhere near
+ * the shared branch every other campaign depends on.
+ */
+async function createPreflightBranch(campaignName, campaignFiles) {
+  const branch = await github('git/ref/heads/main')
+  const baseCommitSha = branch.object.sha
+  const baseCommit = await github(`git/commits/${baseCommitSha}`)
+  const baseTreeSha = baseCommit.tree.sha
+
+  const tree = Object.entries(campaignFiles).map(([path, content]) => ({
+    path, mode: '100644', type: 'blob', content,
+  }))
+
+  const treeData = await github('git/trees', {
+    method: 'POST',
+    body: JSON.stringify({ base_tree: baseTreeSha, tree }),
+  })
+
+  const commit = await github('git/commits', {
+    method: 'POST',
+    body: JSON.stringify({
+      message: `[preflight] ${campaignName} — build verification only, not merged yet`,
+      tree: treeData.sha,
+      parents: [baseCommitSha],
+    }),
+  })
+
+  const branchName = `preflight/${campaignName}-${Date.now()}`
+  await github('git/refs', {
+    method: 'POST',
+    body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha: commit.sha }),
+  })
+
+  return { branchName, commitSha: commit.sha, baseCommitSha }
+}
+
+async function deletePreflightBranch(branchName) {
+  try {
+    await github(`git/refs/heads/${encodeURIComponent(branchName)}`, { method: 'DELETE' })
+  } catch (error) {
+    // Never let cleanup failure mask the real result — just log it.
+    console.error('[deploy-campaign] failed to delete preflight branch', branchName, error.message)
+  }
+}
+
+/** Pulls the readable build log lines out of Vercel's deployment events. */
+async function fetchBuildLog(deploymentId) {
+  try {
+    const events = await vercel(`/v3/deployments/${deploymentId}/events?limit=300`)
+    const list = Array.isArray(events) ? events : events.events || []
+    return list.map((e) => e.text || e.payload?.text || '').filter(Boolean).join('\n')
+  } catch (error) {
+    return `(could not fetch build log: ${error.message})`
+  }
+}
+
+/**
+ * Deploys the preflight branch as a Vercel preview build and waits for it to
+ * either succeed or fail. This is a REAL build — same npm install, same
+ * `next build`, same TypeScript type-check as production — just aimed at a
+ * throwaway branch instead of main. Returns the actual build log on failure,
+ * so the caller sees the real compiler error instead of a generic message.
+ */
+async function runPreflightBuild(branchName, commitSha) {
+  const deployment = await vercel(`/v13/deployments?forceNew=1`, {
+    method: 'POST',
+    body: JSON.stringify({
+      name: 'landing-pages-ravenlabs',
+      project: PROJECT_ID,
+      target: 'preview',
+      gitSource: { type: 'github', repoId: REPO_ID, ref: branchName, sha: commitSha },
+    }),
+  })
+  if (!deployment.id) throw new Error('Vercel did not return a deployment ID for the preflight build')
+
+  const deadline = Date.now() + 100_000 // generous — real npm install + next build takes time
+  while (Date.now() < deadline) {
+    const status = await vercel(`/v13/deployments/${deployment.id}`)
+    if (status.readyState === 'READY') {
+      return { ok: true, deploymentId: deployment.id }
+    }
+    if (['ERROR', 'CANCELED'].includes(status.readyState)) {
+      const log = await fetchBuildLog(deployment.id)
+      return { ok: false, deploymentId: deployment.id, log }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+  }
+  return { ok: false, deploymentId: deployment.id, log: 'Preflight build did not finish within 100 seconds.' }
+}
+
 async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
   const expectedPage = `app/${campaignName}/page.tsx`
   const expectedThanks = `app/${campaignName}/thanks/page.tsx`
@@ -145,6 +238,8 @@ async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' })
 
+  let preflightBranch = null
+
   try {
     if (!process.env.GITHUB_TOKEN || !process.env.VERCEL_TOKEN) {
       return res.status(500).json({ success: false, error: 'GitHub or Vercel token is not configured' })
@@ -162,6 +257,28 @@ export default async function handler(req, res) {
     }
 
     validateCampaignFiles(campaignName, campaignFiles)
+
+    // ---- Pre-flight: prove this campaign actually builds before it goes anywhere
+    // near main. This is a REAL npm install + next build + TypeScript check, run by
+    // Vercel itself on a throwaway branch. Main is never touched if this fails. ----
+    const preflight = await createPreflightBranch(campaignName, campaignFiles)
+    preflightBranch = preflight.branchName
+
+    const buildResult = await runPreflightBuild(preflight.branchName, preflight.commitSha)
+    await deletePreflightBranch(preflight.branchName)
+    preflightBranch = null // cleaned up, don't try again in the catch block
+
+    if (!buildResult.ok) {
+      return res.status(422).json({
+        success: false,
+        status: 'PREFLIGHT_BUILD_FAILED',
+        error: 'This campaign does not build and was never committed to main.',
+        buildLog: buildResult.log,
+        message: 'Fix the error shown in buildLog and try again. Nothing was written to the shared repository.',
+      })
+    }
+
+    // ---- Only now, with a proven-good build, does anything touch the shared branch ----
     const commitSha = await commitCampaign(campaignName, campaignStatus, campaignFiles)
 
     const deployment = await vercel(`/v13/deployments?forceNew=1`, {
@@ -191,9 +308,10 @@ export default async function handler(req, res) {
       registryUrl: `${DOMAIN}/campaigns`,
       commitSha,
       deploymentId: deployment.id,
-      message: 'Campaign was committed to GitHub and an exact-commit production deployment was started. Call /api/verify-deployment until it returns status LIVE before reporting success.',
+      message: 'Pre-flight build passed. Campaign was committed to GitHub and an exact-commit production deployment was started. Call /api/verify-deployment until it returns status LIVE before reporting success.',
     })
   } catch (error) {
+    if (preflightBranch) await deletePreflightBranch(preflightBranch)
     console.error('[deploy-campaign]', error)
     return res.status(500).json({
       success: false,

@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/deploy-campaign.js": {
+      "maxDuration": 120
+    },
+    "api/verify-deployment.js": {
+      "maxDuration": 60
+    }
+  }
+}
