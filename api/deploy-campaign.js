@@ -164,7 +164,7 @@ export default async function handler(req, res) {
     validateCampaignFiles(campaignName, campaignFiles)
     const commitSha = await commitCampaign(campaignName, campaignStatus, campaignFiles)
 
-    const deployment = await vercel('/v13/projects/${PROJECT_ID}/deployments?forceNew=1', {
+    const deployment = await vercel(`/v13/projects/${PROJECT_ID}/deployments?forceNew=1`, {
       method: 'POST',
       body: JSON.stringify({
         name: 'landing-pages-ravenlabs',
