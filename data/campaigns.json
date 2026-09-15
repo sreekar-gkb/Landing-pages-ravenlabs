@@ -1,7 +1,7 @@
 [
   {
     "slug": "gpt-6-astra",
-    "name": "GPT-6 Astra Readiness \u2014 Real-Time AI Capabilities",
+    "name": "GPT-6 Astra Readiness — Real-Time AI Capabilities",
     "url": "https://landing-pages-ravenlabs.vercel.app/gpt-6-astra",
     "keyword": "gpt-6 astra",
     "status": "test",
@@ -14,5 +14,13 @@
     "keyword": "zoho zia agents",
     "status": "live",
     "deployedAt": "2026-09-14"
+  },
+  {
+    "slug": "test-1789436968",
+    "name": "test 1789436968 Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/test-1789436968",
+    "keyword": "test 1789436968",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
