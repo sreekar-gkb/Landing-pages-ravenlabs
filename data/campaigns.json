@@ -38,5 +38,13 @@
     "keyword": "test live diag 01",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "raven-copilot-studio-ai",
+    "name": "raven copilot studio ai Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/raven-copilot-studio-ai",
+    "keyword": "raven copilot studio ai",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
