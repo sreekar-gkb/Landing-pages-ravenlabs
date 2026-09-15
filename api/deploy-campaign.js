@@ -6,6 +6,8 @@ const REPO_ID = 1368350860
 const PROJECT_ID = 'prj_X1zS1V8NW6zf3P4sUXUSsPb21Sjb'
 const DOMAIN = 'https://landing-pages-ravenlabs.vercel.app'
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 async function github(path, options = {}) {
   const response = await fetch(`${GITHUB_API}/repos/${OWNER}/${REPO}/${path}`, {
     ...options,
@@ -39,7 +41,11 @@ async function vercel(path, options = {}) {
   const text = await response.text()
   let data
   try { data = JSON.parse(text) } catch { data = { raw: text } }
-  if (!response.ok) throw new Error(`Vercel ${response.status}: ${data.error?.message || data.message || text}`)
+  if (!response.ok) {
+    const error = new Error(`Vercel ${response.status}: ${data.error?.message || data.message || text}`)
+    error.status = response.status
+    throw error
+  }
   return data
 }
 
@@ -68,78 +74,74 @@ async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
   const expectedPage = `app/${campaignName}/page.tsx`
   const expectedThanks = `app/${campaignName}/thanks/page.tsx`
 
-  // Retry the whole read/commit sequence when another campaign advances main first.
-  for (let attempt = 1; attempt <= 4; attempt++) {
+  // Optimistic concurrency: retry the full read/tree/commit/ref-update sequence
+  // when another campaign advances main between our read and ref update.
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const branch = await github('git/ref/heads/main')
+    const baseCommitSha = branch.object.sha
+    const baseCommit = await github(`git/commits/${baseCommitSha}`)
+    const baseTreeSha = baseCommit.tree.sha
+
+    const registry = await github(`contents/data/campaigns.json?ref=${baseCommitSha}`)
+    const campaigns = JSON.parse(Buffer.from(registry.content, 'base64').toString('utf8'))
+    if (!Array.isArray(campaigns)) throw new Error('data/campaigns.json must contain an array')
+
+    const record = {
+      slug: campaignName,
+      name: `${campaignName.replace(/-/g, ' ')} Campaign`,
+      url: `${DOMAIN}/${campaignName}`,
+      keyword: campaignName.replace(/-/g, ' '),
+      status: campaignStatus,
+      deployedAt: new Date().toISOString().slice(0, 10),
+    }
+    const index = campaigns.findIndex((campaign) => campaign.slug === campaignName)
+    if (index >= 0) campaigns[index] = record
+    else campaigns.push(record)
+
+    const tree = Object.entries({
+      ...campaignFiles,
+      'data/campaigns.json': JSON.stringify(campaigns, null, 2) + '\n',
+    }).map(([path, content]) => ({ path, mode: '100644', type: 'blob', content }))
+
+    const treeData = await github('git/trees', {
+      method: 'POST',
+      body: JSON.stringify({ base_tree: baseTreeSha, tree }),
+    })
+
+    const commit = await github('git/commits', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: `Deploy ${campaignName} landing page`,
+        tree: treeData.sha,
+        parents: [baseCommitSha],
+      }),
+    })
+
     try {
-      const registry = await github('contents/data/campaigns.json?ref=main')
-      const campaigns = JSON.parse(Buffer.from(registry.content, 'base64').toString('utf8'))
-      if (!Array.isArray(campaigns)) throw new Error('data/campaigns.json must contain an array')
-
-      const record = {
-        slug: campaignName,
-        name: `${campaignName.replace(/-/g, ' ')} Campaign`,
-        url: `${DOMAIN}/${campaignName}`,
-        keyword: campaignName.replace(/-/g, ' '),
-        status: campaignStatus,
-        deployedAt: new Date().toISOString().slice(0, 10),
-      }
-      const index = campaigns.findIndex((campaign) => campaign.slug === campaignName)
-      if (index >= 0) campaigns[index] = record
-      else campaigns.push(record)
-
-      const branch = await github('git/ref/heads/main')
-      const baseSha = branch.object.sha
-      const tree = Object.entries({
-        ...campaignFiles,
-        'data/campaigns.json': JSON.stringify(campaigns, null, 2) + '\n',
-      }).map(([path, content]) => ({ path, mode: '100644', type: 'blob', content }))
-
-      const treeData = await github('git/trees', {
-        method: 'POST',
-        body: JSON.stringify({ base_tree: baseSha, tree }),
+      await github('git/refs/heads/main', {
+        method: 'PATCH',
+        body: JSON.stringify({ sha: commit.sha, force: false }),
       })
-      const commit = await github('git/commits', {
-        method: 'POST',
-        body: JSON.stringify({
-          message: `Deploy ${campaignName} landing page`,
-          tree: treeData.sha,
-          parents: [baseSha],
-        }),
-      })
-
-      try {
-        await github('git/refs/heads/main', {
-          method: 'PATCH',
-          body: JSON.stringify({ sha: commit.sha, force: false }),
-        })
-      } catch (error) {
-        if ((error.status === 409 || error.status === 422) && attempt < 4) {
-          await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
-          continue
-        }
-        throw error
-      }
-
-      // Verify the exact commit, not merely whatever main points to after it.
-      await github(`contents/${expectedPage}?ref=${commit.sha}`)
-      await github(`contents/${expectedThanks}?ref=${commit.sha}`)
-      const committedRegistry = await github(`contents/data/campaigns.json?ref=${commit.sha}`)
-      const committedCampaigns = JSON.parse(Buffer.from(committedRegistry.content, 'base64').toString('utf8'))
-      if (!committedCampaigns.some((campaign) => campaign.slug === campaignName)) {
-        throw new Error('Campaign registry was not written to the same commit')
-      }
-
-      return commit.sha
     } catch (error) {
-      if ((error.status === 409 || error.status === 422) && attempt < 4) {
-        await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
+      if ((error.status === 409 || error.status === 422) && attempt < 5) {
+        await sleep(300 * attempt)
         continue
       }
       throw error
     }
+
+    await github(`contents/${expectedPage}?ref=${commit.sha}`)
+    await github(`contents/${expectedThanks}?ref=${commit.sha}`)
+    const committedRegistry = await github(`contents/data/campaigns.json?ref=${commit.sha}`)
+    const committedCampaigns = JSON.parse(Buffer.from(committedRegistry.content, 'base64').toString('utf8'))
+    if (!committedCampaigns.some((campaign) => campaign.slug === campaignName)) {
+      throw new Error('Campaign registry was not written to the same Git commit')
+    }
+
+    return commit.sha
   }
 
-  throw new Error('GitHub commit failed after 4 attempts')
+  throw new Error('GitHub commit failed after 5 attempts')
 }
 
 export default async function handler(req, res) {
@@ -164,7 +166,7 @@ export default async function handler(req, res) {
     validateCampaignFiles(campaignName, campaignFiles)
     const commitSha = await commitCampaign(campaignName, campaignStatus, campaignFiles)
 
-    // Create one production deployment for the exact commit just pushed.
+    // Explicit production deployment from the exact Git commit just created.
     const deployment = await vercel('/v13/deployments?forceNew=1', {
       method: 'POST',
       body: JSON.stringify({
@@ -182,7 +184,6 @@ export default async function handler(req, res) {
 
     if (!deployment.id) throw new Error('Vercel did not return a deployment ID')
 
-    // Do not wait inside this serverless request. Claude must call the verification endpoint.
     return res.status(202).json({
       success: true,
       status: 'DEPLOYMENT_STARTED',
@@ -191,7 +192,7 @@ export default async function handler(req, res) {
       registryUrl: `${DOMAIN}/campaigns`,
       commitSha,
       deploymentId: deployment.id,
-      message: 'GitHub commit verified and exact-commit production deployment started. Poll /api/verify-deployment before reporting LIVE.',
+      message: 'Campaign committed and exact-commit production deployment started. Poll /api/verify-deployment before reporting LIVE.',
     })
   } catch (error) {
     console.error('[deploy-campaign]', error)
