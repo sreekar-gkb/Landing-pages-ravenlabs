@@ -30,5 +30,13 @@
     "keyword": "fulqrom asset intelligence",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "test-live-diag-01",
+    "name": "test live diag 01 Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/test-live-diag-01",
+    "keyword": "test live diag 01",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
