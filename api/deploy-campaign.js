@@ -140,7 +140,9 @@ async function runPreflightBuild(branchName, commitSha) {
     body: JSON.stringify({
       name: 'landing-pages-ravenlabs',
       project: PROJECT_ID,
-      target: 'preview',
+      // No `target` field — omitting it is how you get a preview deployment.
+      // 'preview' is NOT a valid explicit value for this API; only 'production',
+      // 'staging', or a custom environment identifier are accepted.
       gitSource: { type: 'github', repoId: REPO_ID, ref: branchName, sha: commitSha },
     }),
   })
