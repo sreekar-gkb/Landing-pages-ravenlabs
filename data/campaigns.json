@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "slug": "fulqrom",
+    "name": "fulqrom Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/fulqrom",
+    "keyword": "fulqrom",
+    "status": "live",
+    "deployedAt": "2026-09-15"
+  }
+]
