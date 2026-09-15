@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { submitLead } from '@/lib/submit-lead'
 
 type LeadFormProps = {
@@ -9,44 +8,56 @@ type LeadFormProps = {
   redirectPath?: string
 }
 
+function getTrackingParams() {
+  if (typeof window === 'undefined') return {}
+  const params = new URLSearchParams(window.location.search)
+  return {
+    utm_source: params.get('utm_source') || undefined,
+    utm_medium: params.get('utm_medium') || undefined,
+    utm_campaign: params.get('utm_campaign') || undefined,
+    utm_term: params.get('utm_term') || undefined,
+    utm_content: params.get('utm_content') || undefined,
+    gclid: params.get('gclid') || undefined,
+  }
+}
+
 export default function LeadForm({ campaign, redirectPath }: LeadFormProps) {
-  const searchParams = useSearchParams()
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (status === 'submitting') return
+
     setStatus('submitting')
     setError('')
 
     const form = new FormData(e.currentTarget)
-    const result = await submitLead({
-      firstName: String(form.get('firstName') || ''),
-      email: String(form.get('email') || ''),
-      company: String(form.get('company') || ''),
-      phone: String(form.get('phone') || ''),
-      message: String(form.get('message') || ''),
-      website: String(form.get('website') || ''),
-      campaign,
-      utm: {
-        utm_source: searchParams.get('utm_source') || undefined,
-        utm_medium: searchParams.get('utm_medium') || undefined,
-        utm_campaign: searchParams.get('utm_campaign') || undefined,
-        utm_term: searchParams.get('utm_term') || undefined,
-        utm_content: searchParams.get('utm_content') || undefined,
-        gclid: searchParams.get('gclid') || undefined,
-      },
-    })
+    try {
+      const result = await submitLead({
+        firstName: String(form.get('firstName') || ''),
+        email: String(form.get('email') || ''),
+        company: String(form.get('company') || ''),
+        phone: String(form.get('phone') || ''),
+        message: String(form.get('message') || ''),
+        website: String(form.get('website') || ''),
+        campaign,
+        utm: getTrackingParams(),
+      })
 
-    if (result.ok) {
-      setStatus('success')
-      e.currentTarget.reset()
-      window.location.href = redirectPath || `/${campaign}/thanks`
-      return
+      if (result.ok) {
+        setStatus('success')
+        e.currentTarget.reset()
+        window.location.assign(redirectPath || `/${campaign}/thanks`)
+        return
+      }
+
+      setStatus('error')
+      setError(result.error)
+    } catch {
+      setStatus('error')
+      setError('Something went wrong. Please try again.')
     }
-
-    setStatus('error')
-    setError(result.error)
   }
 
   if (status === 'success') return <p role="status">Thanks — we received your request.</p>
