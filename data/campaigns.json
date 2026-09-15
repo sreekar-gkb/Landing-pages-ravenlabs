@@ -14,5 +14,13 @@
     "keyword": "test demo page",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "skill-verification-test",
+    "name": "skill verification test Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/skill-verification-test",
+    "keyword": "skill verification test",
+    "status": "test",
+    "deployedAt": "2026-09-15"
   }
 ]
