@@ -6,5 +6,13 @@
     "keyword": "fulqrom",
     "status": "test",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "zoho-zia-agents",
+    "name": "zoho zia agents Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/zoho-zia-agents",
+    "keyword": "zoho zia agents",
+    "status": "live",
+    "deployedAt": "2026-09-15"
   }
 ]
