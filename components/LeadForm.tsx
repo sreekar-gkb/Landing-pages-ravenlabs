@@ -32,10 +32,17 @@ export default function LeadForm({ campaign, redirectPath, ctaLabel = 'Book a Re
     e.preventDefault()
     if (status === 'submitting') return
 
+    // Capture this before the first await — React nullifies e.currentTarget once the
+    // synchronous part of the handler finishes, which was causing every successful
+    // submission to throw "Cannot read properties of null (reading 'reset')" right
+    // before the redirect, so the user saw a false failure even though the lead was
+    // already captured.
+    const formEl = e.currentTarget
+
     setStatus('submitting')
     setError('')
 
-    const form = new FormData(e.currentTarget)
+    const form = new FormData(formEl)
     try {
       const result = await submitLead({
         firstName: String(form.get('firstName') || ''),
@@ -50,7 +57,7 @@ export default function LeadForm({ campaign, redirectPath, ctaLabel = 'Book a Re
 
       if (result.ok) {
         setStatus('success')
-        e.currentTarget.reset()
+        formEl.reset()
         window.location.assign(redirectPath || `/${campaign}/thanks`)
         return
       }
