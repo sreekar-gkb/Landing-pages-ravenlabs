@@ -1,1 +1,1 @@
-export default function ThanksPage() {n  return (n    <main className="min-h-screen bg-[#F8F9FE] flex items-center justify-center">n      <div className="text-center space-y-4">n        <h1 className="text-4xl font-black text-black font-['Poppins']">Thank You!</h1>n        <p className="text-slate-600">We'll be in touch within 1 business day.</p>n      </div>n    </main>n  )n}
+export default function Thanks() { return <h1>Thank You</h1> }
