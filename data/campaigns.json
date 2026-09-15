@@ -6,5 +6,13 @@
     "keyword": "fulqrom",
     "status": "test",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "preflight-test-valid",
+    "name": "preflight test valid Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/preflight-test-valid",
+    "keyword": "preflight test valid",
+    "status": "test",
+    "deployedAt": "2026-09-15"
   }
 ]
