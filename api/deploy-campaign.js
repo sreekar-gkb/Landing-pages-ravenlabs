@@ -6,8 +6,6 @@ const REPO_ID = 1368350860
 const PROJECT_ID = 'prj_X1zS1V8NW6zf3P4sUXUSsPb21Sjb'
 const DOMAIN = 'https://landing-pages-ravenlabs.vercel.app'
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
 async function github(path, options = {}) {
   const response = await fetch(`${GITHUB_API}/repos/${OWNER}/${REPO}/${path}`, {
     ...options,
@@ -124,7 +122,7 @@ async function commitCampaign(campaignName, campaignStatus, campaignFiles) {
       })
     } catch (error) {
       if ((error.status === 409 || error.status === 422) && attempt < 5) {
-        await sleep(300 * attempt)
+        await new Promise((resolve) => setTimeout(resolve, 300 * attempt))
         continue
       }
       throw error
@@ -166,7 +164,6 @@ export default async function handler(req, res) {
     validateCampaignFiles(campaignName, campaignFiles)
     const commitSha = await commitCampaign(campaignName, campaignStatus, campaignFiles)
 
-    // Explicit production deployment from the exact Git commit just created.
     const deployment = await vercel('/v13/deployments?forceNew=1', {
       method: 'POST',
       body: JSON.stringify({
@@ -184,20 +181,23 @@ export default async function handler(req, res) {
 
     if (!deployment.id) throw new Error('Vercel did not return a deployment ID')
 
+    // HTTP 202 means the request was accepted, not that the campaign is live.
+    // Keep success=false so callers cannot mistake this state for deployment completion.
     return res.status(202).json({
-      success: true,
+      success: false,
       status: 'DEPLOYMENT_STARTED',
       campaign: campaignName,
       url: `${DOMAIN}/${campaignName}`,
       registryUrl: `${DOMAIN}/campaigns`,
       commitSha,
       deploymentId: deployment.id,
-      message: 'Campaign committed and exact-commit production deployment started. Poll /api/verify-deployment before reporting LIVE.',
+      message: 'Campaign was committed to GitHub and an exact-commit production deployment was started. Call /api/verify-deployment until it returns status LIVE before reporting success.',
     })
   } catch (error) {
     console.error('[deploy-campaign]', error)
     return res.status(500).json({
       success: false,
+      status: 'DEPLOYMENT_FAILED',
       error: 'Deployment failed',
       details: error instanceof Error ? error.message : String(error),
       ...(error?.details ? { validation: error.details } : {}),
