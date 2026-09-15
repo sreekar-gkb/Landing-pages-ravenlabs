@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { trackPageView } from '@/lib/tracking'
+import { initEngagementTracking } from '@/lib/tracking'
 
 export default function EngagementTracker({ campaign }: { campaign: string }) {
-  useEffect(() => {
-    trackPageView(campaign)
-  }, [campaign])
+  useEffect(() => initEngagementTracking(campaign), [campaign])
   return null
 }
