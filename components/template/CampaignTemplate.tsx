@@ -38,6 +38,7 @@ import LeadForm from '@/components/LeadForm';
 import TrackedCta from '@/components/TrackedCta';
 import EngagementTracker from '@/components/EngagementTracker';
 import { RavenLabsLogo } from '@/components/RavenLabsLogo';
+import { EcosystemStrip, ToolIcon } from '@/components/IntegrationLogos';
 import type { CampaignContent } from './CampaignContent.types';
 
 const ICONS: Record<string, LucideIcon> = {
@@ -104,16 +105,28 @@ export default function CampaignTemplate({ campaign, content }: Props) {
     'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
   ];
 
+  // Dynamically calculate grid columns based on count so there are never orphaned cards
+  const benefitCount = content.answer.benefits.length;
+  const benefitGridClass =
+    benefitCount === 3
+      ? 'grid grid-cols-1 md:grid-cols-3 gap-6'
+      : benefitCount === 4
+      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'
+      : benefitCount === 5
+      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+      : 'grid grid-cols-1 md:grid-cols-2 gap-6';
+
   return (
     <div className="min-h-screen bg-[#F8F9FE] text-slate-900 font-['Quicksand'] selection:bg-[#4A00E1] selection:text-white antialiased">
       <EngagementTracker campaign={campaign} />
 
       {/* 1. Co-branded Sticky Glass Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 sm:h-22 flex items-center justify-between">
           <RavenLabsLogo
             partnerName={content.partnerName}
             partnerLogo={content.partnerLogoSrc}
+            height={48}
           />
 
           <div className="flex items-center gap-4 sm:gap-6">
@@ -127,7 +140,7 @@ export default function CampaignTemplate({ campaign, content }: Props) {
 
             <a
               href="#lead-form"
-              className="inline-flex items-center gap-2 px-6 py-2.5 sm:py-3 rounded-full bg-[#4A00E1] hover:bg-[#3B00B3] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#4A00E1]/20 hover:shadow-lg hover:shadow-[#4A00E1]/30 hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 font-['Poppins'] group cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 rounded-full bg-[#4A00E1] hover:bg-[#3B00B3] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#4A00E1]/20 hover:shadow-lg hover:shadow-[#4A00E1]/30 hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 font-['Poppins'] group cursor-pointer"
             >
               <span>{content.hero.ctaLabel || 'Book Strategy Session'}</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
@@ -280,34 +293,19 @@ export default function CampaignTemplate({ campaign, content }: Props) {
           </div>
         </section>
 
-        {/* 4. Ecosystem Integration Strip */}
-        <section className="py-14 bg-white border-y border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8 text-center">
-            <p className="text-xs uppercase tracking-widest font-bold text-slate-500 font-['Poppins']">
-              Seamlessly Integrated Across Your Enterprise Stack
-            </p>
+        {/* 4. Ecosystem Integration Strip with 100% Reliable Inline SVGs */}
+        <EcosystemStrip
+          title="SEAMLESSLY INTEGRATED ACROSS YOUR ENTERPRISE STACK"
+          tools={[
+            { name: 'Microsoft 365', category: 'Productivity' },
+            { name: 'Teams & Outlook', category: 'Collaboration' },
+            { name: 'Power BI', category: 'Analytics' },
+            { name: 'PostgreSQL / Dataverse', category: 'Data Architecture' },
+            { name: 'Custom AI Models', category: 'Intelligence' },
+          ]}
+        />
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-6 items-center justify-center">
-              {[
-                { name: 'Microsoft 365', logo: 'https://cdn.simpleicons.org/microsoft' },
-                { name: 'Teams & Outlook', logo: 'https://cdn.simpleicons.org/microsoftteams' },
-                { name: 'Power BI', logo: 'https://cdn.simpleicons.org/powerbi' },
-                { name: 'PostgreSQL / Dataverse', logo: 'https://cdn.simpleicons.org/postgresql' },
-                { name: 'Custom AI Models', logo: 'https://cdn.simpleicons.org/openai' },
-              ].map((tool, idx) => (
-                <div
-                  key={idx}
-                  className="group flex flex-col items-center gap-2.5 p-5 rounded-2xl bg-[#F8F9FE] border border-slate-200/80 hover:border-[#4A00E1]/30 hover:scale-105 hover:shadow-md transition-all duration-200 shadow-2xs cursor-default"
-                >
-                  <img src={tool.logo} alt={tool.name} className="h-7 w-auto object-contain transition-transform group-hover:scale-110" />
-                  <span className="text-xs font-bold text-slate-700 font-['Poppins']">{tool.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 5. 2x2 Problem / Solution Grid */}
+        {/* 5. Balanced Benefit Solution Grid (No orphaned gaps) */}
         <section className="py-20 bg-[#F8F9FE]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
             <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -322,19 +320,27 @@ export default function CampaignTemplate({ campaign, content }: Props) {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Balanced Grid without orphaned gaps */}
+            <div className={benefitGridClass}>
               {content.answer.benefits.map((benefit, i) => {
                 const Icon = benefit.icon ? ICONS[benefit.icon] || Zap : Zap;
                 return (
                   <div
                     key={i}
-                    className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-md space-y-4 hover:border-[#4A00E1]/40 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+                    className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-md space-y-4 hover:border-[#4A00E1]/40 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-[#F3E8FF] flex items-center justify-center text-[#4A00E1]">
-                      <Icon className="w-6 h-6" />
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-[#F3E8FF] flex items-center justify-center text-[#4A00E1]">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 font-['Poppins']">{benefit.title}</h3>
+                      <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-['Quicksand']">{benefit.body}</p>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 font-['Poppins']">{benefit.title}</h3>
-                    <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-['Quicksand']">{benefit.body}</p>
+
+                    <div className="pt-4 border-t border-slate-100 flex items-center gap-1.5 text-xs font-bold text-[#4A00E1] font-['Poppins']">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Enterprise Ready</span>
+                    </div>
                   </div>
                 );
               })}
@@ -342,81 +348,87 @@ export default function CampaignTemplate({ campaign, content }: Props) {
           </div>
         </section>
 
-        {/* 6. Interactive 5-Stage Process Stepper */}
-        {steps.length > 0 && (
-          <section className="py-20 bg-white border-y border-slate-200/80">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
-              <div className="text-center max-w-3xl mx-auto space-y-3">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F3E8FF] text-[#4A00E1] text-xs font-bold uppercase tracking-wider font-['Poppins']">
-                  Implementation Framework
-                </div>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-['Poppins']">
-                  {content.process.heading}
-                </h2>
-                <p className="text-slate-600 text-base sm:text-lg font-['Quicksand'] leading-relaxed">
-                  {content.process.subhead}
-                </p>
+        {/* 6. Centered 5-Stage Process Stepper with Circular Timeline Nodes */}
+        <section className="py-20 bg-white border-y border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
+            <div className="text-center max-w-3xl mx-auto space-y-3">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F3E8FF] text-[#4A00E1] text-xs font-bold uppercase tracking-wider font-['Poppins']">
+                Implementation Framework
               </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-['Poppins']">
+                {content.process.heading}
+              </h2>
+              <p className="text-slate-600 text-base sm:text-lg font-['Quicksand'] leading-relaxed">
+                {content.process.subhead}
+              </p>
+            </div>
 
-              {/* Stepper Buttons */}
-              <div className="relative">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 relative z-10">
-                  {steps.map((step, idx) => (
+            {/* Stepper Timeline Navigation */}
+            <div className="relative max-w-4xl mx-auto">
+              <div className="hidden sm:block absolute top-7 left-10 right-10 h-0.5 bg-slate-200 -z-0" />
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 relative z-10 justify-items-center">
+                {steps.map((step, idx) => {
+                  const isActive = idx === activeStepIdx;
+                  return (
                     <button
-                      key={idx}
+                      key={step.num}
                       type="button"
                       onClick={() => setActiveStepIdx(idx)}
-                      className={`group flex flex-col items-center p-4 rounded-2xl transition-all duration-200 cursor-pointer text-center ${
-                        idx === activeStepIdx
-                          ? "bg-white shadow-xl border-2 border-[#4A00E1] scale-105"
-                          : "bg-white/70 hover:bg-white border border-slate-200 shadow-sm"
-                      }`}
+                      className="group flex flex-col items-center cursor-pointer transition-all duration-200 focus:outline-none"
                     >
                       <div
-                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full text-xs sm:text-sm font-bold flex items-center justify-center transition-all duration-200 mb-2 ${
-                          idx === activeStepIdx
-                            ? "bg-[#4A00E1] text-white ring-4 ring-[#4A00E1]/20 shadow-md"
-                            : "bg-slate-100 text-slate-600 group-hover:bg-[#F3E8FF] group-hover:text-[#4A00E1]"
+                        className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300 ${
+                          isActive
+                            ? "bg-[#4A00E1] text-white ring-4 ring-[#4A00E1]/20 shadow-xl scale-110"
+                            : "bg-white border-2 border-slate-200 text-slate-600 group-hover:border-[#4A00E1] group-hover:text-[#4A00E1] shadow-sm"
                         } font-['Poppins']`}
                       >
                         {step.num}
                       </div>
+
                       <span
-                        className={`text-xs sm:text-sm font-bold transition-colors font-['Poppins'] ${
-                          idx === activeStepIdx ? "text-[#4A00E1]" : "text-slate-700"
+                        className={`mt-2.5 text-xs sm:text-sm font-bold transition-colors font-['Poppins'] ${
+                          isActive ? "text-[#4A00E1]" : "text-slate-600 group-hover:text-slate-900"
                         }`}
                       >
                         {step.name}
                       </span>
+
+                      <div
+                        className={`h-1.5 rounded-full transition-all duration-300 mt-1.5 ${
+                          isActive ? "w-8 bg-[#4A00E1]" : "w-0 bg-transparent"
+                        }`}
+                      />
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-
-              {/* Active Step Details */}
-              {steps[activeStepIdx] && (
-                <div className="bg-[#F8F9FE] border border-slate-200/90 shadow-xl rounded-3xl p-6 sm:p-10 max-w-4xl mx-auto space-y-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
-                    <div className="flex items-center gap-2.5">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#F3E8FF] text-[#4A00E1] font-['Poppins']">
-                        Stage {steps[activeStepIdx].num}
-                      </span>
-                      <h3 className="text-xl sm:text-2xl font-bold text-slate-900 font-['Poppins']">
-                        {steps[activeStepIdx].title}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <p className="text-slate-600 leading-relaxed text-sm sm:text-base font-['Quicksand']">
-                    {steps[activeStepIdx].desc}
-                  </p>
-                </div>
-              )}
             </div>
-          </section>
-        )}
 
-        {/* 7. 4-Column Photo Feature Grid */}
+            {/* Active Step Details */}
+            {steps[activeStepIdx] && (
+              <div className="bg-[#F8F9FE] border border-slate-200/90 shadow-xl rounded-[28px] p-6 sm:p-10 max-w-4xl mx-auto space-y-6 animate-fadeIn">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#F3E8FF] text-[#4A00E1] font-['Poppins']">
+                      Stage {steps[activeStepIdx].num}
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 font-['Poppins']">
+                      {steps[activeStepIdx].title}
+                    </h3>
+                  </div>
+                </div>
+
+                <p className="text-slate-600 leading-relaxed text-sm sm:text-base font-['Quicksand'] font-medium">
+                  {steps[activeStepIdx].desc}
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 7. 4-Column 3D Interactive Flipping Feature Cards */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
             <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -427,7 +439,7 @@ export default function CampaignTemplate({ campaign, content }: Props) {
                 Engineered for <span className="font-serif italic font-normal text-[#4A00E1]">Enterprise Velocity.</span>
               </h2>
               <p className="text-slate-600 text-base sm:text-lg font-['Quicksand'] leading-relaxed">
-                Precision engineering that integrates your workflows without operational interruption.
+                Hover over any capability card to explore technical deliverables and operational outcomes.
               </p>
             </div>
 
@@ -435,26 +447,75 @@ export default function CampaignTemplate({ campaign, content }: Props) {
               {content.answer.benefits.slice(0, 4).map((feat, idx) => (
                 <div
                   key={idx}
-                  className="group relative h-[380px] rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 hover:-translate-y-1 hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                  className="group [perspective:1000px] h-[400px] w-full cursor-pointer"
                 >
-                  <img
-                    src={featureImages[idx % featureImages.length]}
-                    alt={feat.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                  <div className="relative h-full w-full rounded-[28px] transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] shadow-lg hover:shadow-2xl">
+                    
+                    {/* Front Face */}
+                    <div className="absolute inset-0 h-full w-full rounded-[28px] overflow-hidden [backface-visibility:hidden] border border-slate-200/80">
+                      <img
+                        src={featureImages[idx % featureImages.length]}
+                        alt={feat.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                      />
 
-                  <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-xs font-bold text-slate-900 shadow-md border border-white/50 font-['Poppins']">
-                    0{idx + 1}
-                  </div>
+                      <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-xs font-bold text-slate-900 shadow-md border border-white/50 font-['Poppins']">
+                        0{idx + 1}
+                      </div>
 
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-6 text-white flex flex-col justify-end space-y-2">
-                    <h4 className="text-xl font-bold leading-tight font-['Poppins'] text-white">
-                      {feat.title}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-['Quicksand']">
-                      {feat.body}
-                    </p>
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-6 text-white flex flex-col justify-end space-y-2">
+                        <h4 className="text-xl font-bold leading-tight font-['Poppins'] text-white">
+                          {feat.title}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-['Quicksand'] line-clamp-2">
+                          {feat.body}
+                        </p>
+                        <div className="pt-2 flex items-center gap-1 text-[11px] font-bold text-[#F3E8FF] uppercase tracking-wider font-['Poppins']">
+                          <span>Hover to flip</span>
+                          <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Back Face (Flipped) */}
+                    <div className="absolute inset-0 h-full w-full rounded-[28px] bg-white border-2 border-[#4A00E1]/30 p-6 sm:p-7 flex flex-col justify-between [backface-visibility:hidden] [transform:rotateY(180deg)] shadow-xl bg-gradient-to-b from-white via-[#F8F9FE] to-white">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#F3E8FF] text-[#4A00E1] font-['Poppins']">
+                            Capability 0{idx + 1}
+                          </span>
+                          <div className="w-8 h-8 rounded-full bg-[#F3E8FF] flex items-center justify-center text-[#4A00E1]">
+                            <Sparkles className="w-4 h-4" />
+                          </div>
+                        </div>
+
+                        <h4 className="text-lg font-bold text-slate-900 font-['Poppins'] leading-tight">
+                          {feat.title}
+                        </h4>
+
+                        <p className="text-xs text-slate-600 font-['Quicksand'] leading-relaxed">
+                          {feat.body}
+                        </p>
+
+                        <div className="pt-2 space-y-2 border-t border-slate-100">
+                          <div className="flex items-start gap-2 text-xs text-slate-800 font-semibold font-['Quicksand']">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#4A00E1] mt-0.5 shrink-0" />
+                            <span>Enterprise data governance</span>
+                          </div>
+                          <div className="flex items-start gap-2 text-xs text-slate-800 font-semibold font-['Quicksand']">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#4A00E1] mt-0.5 shrink-0" />
+                            <span>Zero pipeline downtime</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#4A00E1] font-['Poppins']">
+                        <span>Raven Labs Standard</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               ))}
@@ -663,7 +724,7 @@ export default function CampaignTemplate({ campaign, content }: Props) {
       <footer className="border-t border-slate-200 bg-white py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-100">
-            <RavenLabsLogo />
+            <RavenLabsLogo height={44} />
 
             <div className="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm font-semibold text-slate-600 font-['Poppins']">
               <a href="tel:1300305009" className="hover:text-[#4A00E1] transition-colors flex items-center gap-1.5">
