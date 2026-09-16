@@ -46,5 +46,13 @@
     "keyword": "postgres enterprise db",
     "status": "live",
     "deployedAt": "2026-09-16"
+  },
+  {
+    "slug": "zoho-iot",
+    "name": "zoho iot Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/zoho-iot",
+    "keyword": "zoho iot",
+    "status": "live",
+    "deployedAt": "2026-09-16"
   }
 ]
