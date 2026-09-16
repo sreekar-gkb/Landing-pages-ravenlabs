@@ -1,4 +1,4 @@
-﻿import Image from 'next/image';
+import Image from 'next/image';
 
 interface RavenLabsLogoProps {
   partnerName?: string;
@@ -11,20 +11,20 @@ export function RavenLabsLogo({
   partnerName,
   partnerLogo,
   variant = 'dark',
-  height = 40,
+  height = 52,
 }: RavenLabsLogoProps) {
-  const logoSrc = variant === 'light' ? '/raven-labs-logo-white.png' : '/raven-labs-logo.png';
+  const logoSrc = '/raven-labs-logo.png';
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3.5 sm:gap-4">
       <div className="relative flex items-center">
         <Image
           src={logoSrc}
           alt="Raven Labs"
-          width={160}
+          width={180}
           height={height}
           priority
-          className={`h-9 sm:h-10 w-auto object-contain transition-opacity ${
+          className={`h-11 sm:h-12 md:h-13 w-auto object-contain transition-all duration-200 ${
             variant === 'light' ? 'brightness-0 invert' : ''
           }`}
         />
@@ -32,9 +32,9 @@ export function RavenLabsLogo({
 
       {partnerName && (
         <div className="flex items-center gap-2.5">
-          <div className={`h-6 w-px ${variant === 'light' ? 'bg-slate-700' : 'bg-slate-300'} mx-0.5`} />
+          <div className={`h-7 w-px ${variant === 'light' ? 'bg-slate-700' : 'bg-slate-300'} mx-0.5`} />
           {partnerLogo && (
-            <img src={partnerLogo} alt={partnerName} className="h-5 sm:h-6 w-auto object-contain" />
+            <img src={partnerLogo} alt={partnerName} className="h-6 sm:h-7 w-auto object-contain" />
           )}
           <span
             className={`font-bold text-sm sm:text-base tracking-tight font-['Poppins'] ${
