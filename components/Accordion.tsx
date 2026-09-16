@@ -1,20 +1,59 @@
-'use client'
+﻿'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
 
-export default function Accordion({ items }: { items: { q: string; a: string }[] }) {
-  const [open, setOpen] = useState<number | null>(null)
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+export default function Accordion({ items }: { items: FaqItem[] }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+
+  const toggle = (i: number) => setOpenIdx((current) => (current === i ? null : i));
+
   return (
-    <div style={{ display: 'grid', gap: '1px', borderTop: '1px solid var(--rl-border)' }}>
-      {items.map((item, i) => (
-        <div key={item.q} style={{ borderBottom: '1px solid var(--rl-border)' }}>
-          <button type="button" onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i}
-            style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: 20, textAlign: 'left', padding: '1.25rem 0', border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>
-            <span>{item.q}</span><span aria-hidden="true">{open === i ? '−' : '+'}</span>
-          </button>
-          {open === i && <div style={{ padding: '0 0 1.25rem', color: 'var(--rl-fg-muted)', lineHeight: 1.6 }}>{item.a}</div>}
-        </div>
-      ))}
+    <div className="space-y-3">
+      {items.map((item, i) => {
+        const isOpen = openIdx === i;
+        return (
+          <div
+            key={i}
+            className={`border rounded-2xl transition-all ${
+              isOpen
+                ? "bg-white border-[#4A00E1]/30 shadow-md ring-1 ring-[#4A00E1]/10"
+                : "bg-white/70 hover:bg-white border-slate-200"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => toggle(i)}
+              aria-expanded={isOpen}
+              className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left cursor-pointer"
+            >
+              <span className="font-bold text-slate-900 text-base sm:text-lg font-['Poppins']">
+                {item.q}
+              </span>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                  isOpen
+                    ? "bg-[#4A00E1] text-white rotate-180"
+                    : "bg-slate-100 text-slate-600 hover:bg-[#F3E8FF] hover:text-[#4A00E1]"
+                }`}
+              >
+                {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              </div>
+            </button>
+
+            {isOpen && (
+              <div className="px-5 sm:px-6 pb-6 pt-1 text-slate-600 leading-relaxed text-sm sm:text-base font-['Quicksand'] border-t border-slate-100">
+                {item.a}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
-  )
+  );
 }
