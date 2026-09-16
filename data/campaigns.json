@@ -38,5 +38,13 @@
     "keyword": "shopify plus wholesale",
     "status": "live",
     "deployedAt": "2026-09-15"
+  },
+  {
+    "slug": "postgres-enterprise-db",
+    "name": "postgres enterprise db Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/postgres-enterprise-db",
+    "keyword": "postgres enterprise db",
+    "status": "live",
+    "deployedAt": "2026-09-16"
   }
 ]
