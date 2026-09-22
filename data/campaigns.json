@@ -54,5 +54,13 @@
     "keyword": "zoho iot",
     "status": "live",
     "deployedAt": "2026-09-16"
+  },
+  {
+    "slug": "jira-ticket-automation",
+    "name": "jira ticket automation Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/jira-ticket-automation",
+    "keyword": "jira ticket automation",
+    "status": "test",
+    "deployedAt": "2026-09-22"
   }
 ]
