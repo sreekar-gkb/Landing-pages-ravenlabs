@@ -62,5 +62,13 @@
     "keyword": "jira ticket automation",
     "status": "test",
     "deployedAt": "2026-09-22"
+  },
+  {
+    "slug": "zoho-fsm",
+    "name": "zoho fsm Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/zoho-fsm",
+    "keyword": "zoho fsm",
+    "status": "live",
+    "deployedAt": "2026-09-22"
   }
 ]
