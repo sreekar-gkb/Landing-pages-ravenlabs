@@ -1,0 +1,19 @@
+/* Import once in app/globals.css: @import '../lib/lp.css'; (after @tailwind directives) */
+.lp-flip { perspective: 1200px; }
+.lp-flip-inner { transition: transform 700ms; transform-style: preserve-3d; }
+.lp-flip:hover .lp-flip-inner, .lp-flip[aria-pressed='true'] .lp-flip-inner { transform: rotateY(180deg); }
+.lp-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.lp-back { transform: rotateY(180deg); }
+.lp-marquee { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.lp-marquee:hover .lp-marquee-track { animation-play-state: paused; }
+.lp-draw { stroke-dasharray: 640; stroke-dashoffset: 640; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .lp-root *, .lp-root *::before, .lp-root *::after { animation: none !important; transition: none !important; }
+  .lp-draw { stroke-dashoffset: 0; }
+}
+
+@keyframes lp-slide-up { 0% { transform: translateY(100%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100%); opacity: 0; } }
+@keyframes lp-marquee { to { transform: translateX(-50%); } }
+@keyframes lp-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(74,0,225,.5); } 70% { box-shadow: 0 0 0 10px rgba(74,0,225,0); } 100% { box-shadow: 0 0 0 0 rgba(74,0,225,0); } }
+@keyframes lp-draw { to { stroke-dashoffset: 0; } }

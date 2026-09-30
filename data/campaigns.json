@@ -70,5 +70,13 @@
     "keyword": "zoho fsm",
     "status": "live",
     "deployedAt": "2026-09-22"
+  },
+  {
+    "slug": "zoho-zia-ai-agents",
+    "name": "zoho zia ai agents Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/zoho-zia-ai-agents",
+    "keyword": "zoho zia ai agents",
+    "status": "live",
+    "deployedAt": "2026-09-30"
   }
 ]
