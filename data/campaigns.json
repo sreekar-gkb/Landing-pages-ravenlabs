@@ -78,5 +78,13 @@
     "keyword": "zoho zia ai agents",
     "status": "live",
     "deployedAt": "2026-09-30"
+  },
+  {
+    "slug": "github-advanced-security",
+    "name": "github advanced security Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/github-advanced-security",
+    "keyword": "github advanced security",
+    "status": "live",
+    "deployedAt": "2026-09-30"
   }
 ]
