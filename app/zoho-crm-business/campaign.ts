@@ -3,7 +3,7 @@
 // Bracketed text = placeholders a human must supply before launch.
 import type { Campaign } from './_lp/types';
 
-const S = '/zoho-crm-business';
+const P = '/zoho-crm-business';
 
 const campaign: Campaign = {
   slug: 'zoho-crm-business',
@@ -12,7 +12,7 @@ const campaign: Campaign = {
     title: 'Raven Labs — Zoho CRM Implementation Partner (Australia)',
     description: 'Book a live Zoho CRM demo with Raven Labs, an Authorised Zoho Partner. Built for Australian SMBs, manufacturers and professional services firms.',
   },
-  partner: { name: 'Zoho CRM', logo: `${S}/logos/zoho-crm.png`, logoWidth: 309, logoHeight: 128 },
+  partner: { name: 'Zoho CRM', logo: `${P}/img/logos-zoho-crm.png`, logoWidth: 309, logoHeight: 128 },
   hero: {
     line1: 'Turn your Zoho CRM',
     prefix: 'into real',
@@ -35,10 +35,10 @@ const campaign: Campaign = {
     title: 'Built around the Zoho apps your team already uses.',
     subtitle: 'Zoho CRM connects to the rest of the Zoho suite, so a won deal flows through to the invoice, the stock and the support ticket.',
     logos: [
-      { src: `${S}/logos/zoho-crm.png`, alt: 'Zoho CRM' }, { src: `${S}/logos/zoho-books.png`, alt: 'Zoho Books' },
-      { src: `${S}/logos/zoho-desk.png`, alt: 'Zoho Desk' }, { src: `${S}/logos/zoho-analytics.png`, alt: 'Zoho Analytics' },
-      { src: `${S}/logos/zoho-creator.png`, alt: 'Zoho Creator' }, { src: `${S}/logos/zoho-inventory.png`, alt: 'Zoho Inventory' },
-      { src: `${S}/logos/zoho-fsm.png`, alt: 'Zoho FSM' },
+      { src: `${P}/img/logos-zoho-crm.png`, alt: 'Zoho CRM' }, { src: `${P}/img/logos-zoho-books.png`, alt: 'Zoho Books' },
+      { src: `${P}/img/logos-zoho-desk.png`, alt: 'Zoho Desk' }, { src: `${P}/img/logos-zoho-analytics.png`, alt: 'Zoho Analytics' },
+      { src: `${P}/img/logos-zoho-creator.png`, alt: 'Zoho Creator' }, { src: `${P}/img/logos-zoho-inventory.png`, alt: 'Zoho Inventory' },
+      { src: `${P}/img/logos-zoho-fsm.png`, alt: 'Zoho FSM' },
     ],
   },
   trust: { title: 'Trusted by organisations across Australia.', testimonialIds: ['rios-legacy-ryan-fowler'] },
@@ -71,18 +71,18 @@ const campaign: Campaign = {
     accent: 'Implementation Program',
     lead: 'Everything your team needs to sell from one system, from the first process workshop to training, reporting and ongoing support.',
     cards: [
-      { title: 'Sales Process Workshop', image: `${S}/site-assessment-walkthrough.jpg`, description: 'We sit with your team and map how a lead becomes a paying customer today.', bullets: ['Documented sales process', 'Pipeline stage design', 'Fixed-price quote'] },
-      { title: 'Data Migration & Cleanup', image: `${S}/control-cabinet-wiring.jpg`, description: 'Move contacts and deals out of spreadsheets or your old CRM without carrying the mess along.', bullets: ['Duplicate removal', 'Field mapping', 'Test import first'] },
-      { title: 'Pipeline & Automation', image: `${S}/robotic-line.jpg`, description: 'Stages, tasks and reminders that keep every deal moving without chasing.', bullets: ['Stage-based tasks', 'Follow-up reminders', 'Lead assignment rules'] },
-      { title: 'Quoting & Invoicing Links', image: `${S}/food-production-line.jpg`, description: 'A won deal flows to Zoho Books so sales and finance share the same numbers.', bullets: ['Quotes from the CRM', 'Zoho Books sync', 'Product price lists'] },
-      { title: 'Email & Calendar Setup', image: `${S}/assembly-team.jpg`, description: 'Conversations and meetings recorded against the right contact automatically.', bullets: ['Email in the timeline', 'Calendar sync', 'Shared inbox rules'] },
-      { title: 'Dashboards & Forecasting', image: `${S}/machine-touch-panel.jpg`, description: 'The views your leadership team checks every week, built on your own pipeline.', bullets: ['Pipeline by stage', 'Rep activity views', 'Forecast reports'] },
-      { title: 'Team Training & Adoption', image: `${S}/solar-roof-aerial.jpg`, description: 'Role-based training so each person learns only what they use day to day.', bullets: ['Role-based sessions', 'Quick reference guides', 'Post-launch check-in'] },
-      { title: 'Ready to get started?', image: `${S}/bright-factory-floor.jpg`, description: 'Book a live demo and see Zoho CRM set up for a business like yours.', bullets: ['Live demo with a specialist', 'No obligation', 'Response in one business day'] },
+      { title: 'Sales Process Workshop', image: `${P}/img/site-assessment-walkthrough.jpg`, description: 'We sit with your team and map how a lead becomes a paying customer today.', bullets: ['Documented sales process', 'Pipeline stage design', 'Fixed-price quote'] },
+      { title: 'Data Migration & Cleanup', image: `${P}/img/control-cabinet-wiring.jpg`, description: 'Move contacts and deals out of spreadsheets or your old CRM without carrying the mess along.', bullets: ['Duplicate removal', 'Field mapping', 'Test import first'] },
+      { title: 'Pipeline & Automation', image: `${P}/img/robotic-line.jpg`, description: 'Stages, tasks and reminders that keep every deal moving without chasing.', bullets: ['Stage-based tasks', 'Follow-up reminders', 'Lead assignment rules'] },
+      { title: 'Quoting & Invoicing Links', image: `${P}/img/food-production-line.jpg`, description: 'A won deal flows to Zoho Books so sales and finance share the same numbers.', bullets: ['Quotes from the CRM', 'Zoho Books sync', 'Product price lists'] },
+      { title: 'Email & Calendar Setup', image: `${P}/img/assembly-team.jpg`, description: 'Conversations and meetings recorded against the right contact automatically.', bullets: ['Email in the timeline', 'Calendar sync', 'Shared inbox rules'] },
+      { title: 'Dashboards & Forecasting', image: `${P}/img/machine-touch-panel.jpg`, description: 'The views your leadership team checks every week, built on your own pipeline.', bullets: ['Pipeline by stage', 'Rep activity views', 'Forecast reports'] },
+      { title: 'Team Training & Adoption', image: `${P}/img/solar-roof-aerial.jpg`, description: 'Role-based training so each person learns only what they use day to day.', bullets: ['Role-based sessions', 'Quick reference guides', 'Post-launch check-in'] },
+      { title: 'Ready to get started?', image: `${P}/img/bright-factory-floor.jpg`, description: 'Book a live demo and see Zoho CRM set up for a business like yours.', bullets: ['Live demo with a specialist', 'No obligation', 'Response in one business day'] },
     ],
   },
   faq: {
-    image: { src: `${S}/process-pipework-square.jpg`, alt: 'Industrial plant with process pipework and machinery' },
+    image: { src: `${P}/img/process-pipework-square.jpg`, alt: 'Industrial plant with process pipework and machinery' },
     items: [
       { q: 'We use spreadsheets today. Can you move us over?', a: 'Yes. We clean and map your existing contacts, accounts and deals, run a test import for you to check, then load everything into Zoho CRM before your team goes live.' },
       { q: 'Can you migrate us from another CRM?', a: 'Yes. We map your current fields and history to Zoho CRM, so the notes and deal records your team relies on come with you. We confirm what moves across during the demo.' },
