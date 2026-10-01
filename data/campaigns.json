@@ -94,5 +94,13 @@
     "keyword": "skill test existing page",
     "status": "test",
     "deployedAt": "2026-10-01"
+  },
+  {
+    "slug": "skill-test-existing-page-v2",
+    "name": "skill test existing page v2 Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/skill-test-existing-page-v2",
+    "keyword": "skill test existing page v2",
+    "status": "test",
+    "deployedAt": "2026-10-01"
   }
 ]
