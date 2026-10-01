@@ -1,0 +1,25 @@
+{
+  "_readme": "Single source of truth for contact and legal details on every page. Values that are null are omitted from the page rather than invented. Update these, not the components.",
+  "company": "Raven Labs",
+  "website": "https://www.theravenlabs.com/",
+  "phone_display": "1300 305 009",
+  "phone_tel": "1300305009",
+  "email": "info@ravenlabs.com.au",
+  "abn": null,
+  "registered_address": null,
+  "offices": ["Melbourne", "Sydney"],
+  "partner_status": {
+    "zoho": "Authorised Zoho Partner",
+    "microsoft": null
+  },
+  "socials": {
+    "linkedin": "https://www.linkedin.com/company/ravenlabs/",
+    "instagram": "https://www.instagram.com/ravenlabs_official/",
+    "youtube": "https://www.youtube.com/@RavenLabsOfficial",
+    "facebook": "https://www.facebook.com/ravenlabsofficial/",
+    "x": "https://x.com/ravenlabs_ai"
+  },
+  "privacy_url": "https://theravenlabs.com/privacy",
+  "terms_url": "https://theravenlabs.com/terms",
+  "copyright": "© {year} Raven Labs. All rights reserved."
+}
