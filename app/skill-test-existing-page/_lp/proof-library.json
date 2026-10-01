@@ -1,0 +1,46 @@
+{
+  "_readme": "Logo paths are public site paths (copy the file from assets/logos/ into public/brand/). Only entries with approved: true may appear on a page. Add new proof here after the client has approved the exact wording and logo use. Never edit a quote's wording. Placeholder entries keep the carousel working until real proof exists; they render as bracketed text.",
+  "testimonials": [
+    {
+      "id": "rios-legacy-ryan-fowler",
+      "approved": true,
+      "scope": "general",
+      "quote": "The professionalism and dedication of the Raven Labs team is outstanding. We look forward to a continued journey together.",
+      "name": "Ryan Fowler",
+      "role": "CEO",
+      "company": "Rio's Legacy",
+      "logo": "/skill-test-existing-page/img/brand-rios-legacy.png",
+      "source": "Published on copilot.theravenlabs.com (Sept 2026)",
+      "notes": "General Raven Labs testimonial. May appear on any campaign, but never reworded or presented as product-specific."
+    },
+    {
+      "id": "placeholder-1",
+      "approved": false,
+      "placeholder": true,
+      "quote": "[Approved quote from a client using this product]",
+      "name": "[Name]",
+      "role": "[Role]",
+      "company": "[Client company]",
+      "logo": null
+    },
+    {
+      "id": "placeholder-2",
+      "approved": false,
+      "placeholder": true,
+      "quote": "[Approved quote from a second client, ideally in a different industry]",
+      "name": "[Name]",
+      "role": "[Role]",
+      "company": "[Client company]",
+      "logo": null
+    }
+  ],
+  "metrics": [],
+  "case_studies": [],
+  "client_logos": [
+    {
+      "company": "Rio's Legacy",
+      "file": "/brand/rios-legacy.png",
+      "approved": true
+    }
+  ]
+}

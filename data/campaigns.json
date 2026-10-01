@@ -86,5 +86,13 @@
     "keyword": "github advanced security",
     "status": "live",
     "deployedAt": "2026-09-30"
+  },
+  {
+    "slug": "skill-test-existing-page",
+    "name": "skill test existing page Campaign",
+    "url": "https://landing-pages-ravenlabs.vercel.app/skill-test-existing-page",
+    "keyword": "skill test existing page",
+    "status": "test",
+    "deployedAt": "2026-10-01"
   }
 ]
