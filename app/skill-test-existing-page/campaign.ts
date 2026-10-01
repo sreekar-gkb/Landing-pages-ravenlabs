@@ -6,7 +6,7 @@ import type { Campaign } from './_lp/types';
 
 const campaign: Campaign = {
   slug: 'skill-test-existing-page',
-  status: 'draft',
+  status: 'paused',
   meta: {
     title: 'Raven Labs — Zoho IoT Monitoring Partner (Australia)',
     description: 'Connect your existing sensors to Zoho IoT with Raven Labs. Book a free 30-minute site assessment for Australian manufacturing and cold storage sites.',
