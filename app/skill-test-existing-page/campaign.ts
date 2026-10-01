@@ -14,7 +14,7 @@ const campaign: Campaign = {
   },
   partner: { name: 'Zoho IoT', logo: '/skill-test-existing-page/img/logos-zoho-iot.png', logoWidth: 262, logoHeight: 128 },
   hero: {
-    line1: 'Skill test: version ONE',
+    line1: 'Skill test: version TWO',
     prefix: 'into real',
     rotatingWords: ['Uptime', 'Savings', 'Safety', 'Visibility'],
     lead: 'Raven Labs connects the sensors and PLCs already on your floor to Zoho IoT, then turns every abnormal reading into a maintenance job your team sees straight away.',
